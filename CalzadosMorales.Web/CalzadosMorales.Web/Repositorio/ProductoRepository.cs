@@ -1,0 +1,189 @@
+﻿using CalzadosMorales.Web.Models;
+using Microsoft.Data.SqlClient;
+using System.Data;
+
+namespace CalzadosMorales.Web.Repositorio
+{
+    public class ProductoRepository
+    {
+        private readonly string _cadenaConexion;
+
+        public ProductoRepository(IConfiguration configuration)
+        {
+            _cadenaConexion = configuration.GetConnectionString("CadenaSQL");
+        }
+
+        // Obtener producto por ID
+        public Producto ObtenerProductoPorId(int idProducto)
+        {
+            Producto producto = null;
+            using (var conexion = new SqlConnection(_cadenaConexion))
+            {
+                conexion.Open();
+                using (var cmd = new SqlCommand("sp_BuscarProductoPorId", conexion))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@id_producto", idProducto);
+                    using (var dr = cmd.ExecuteReader())
+                    {
+                        if (dr.Read())
+                        {
+                            producto = new Producto
+                            {
+                                IdProducto = Convert.ToInt32(dr["id_producto"]),
+                                Nombre = dr["nombre"].ToString(),
+                                Descripcion = dr["descripcion"] != DBNull.Value ? dr["descripcion"].ToString() : "",
+                                Precio = Convert.ToDecimal(dr["precio"]),
+                                IdCategoria = Convert.ToInt32(dr["id_categoria"]),
+                                IdColor = dr["id_color"] != DBNull.Value ? Convert.ToInt32(dr["id_color"]) : (int?)null,
+                                IdMaterial = dr["id_material"] != DBNull.Value ? Convert.ToInt32(dr["id_material"]) : (int?)null,
+                                Estado = Convert.ToBoolean(dr["estado"])
+                            };
+                        }
+                    }
+                }
+            }
+            return producto;
+        }
+
+        // Listar todos los productos
+        public List<Producto> ListarProductos()
+        {
+            var lista = new List<Producto>();
+            using (var conexion = new SqlConnection(_cadenaConexion))
+            {
+                conexion.Open();
+                using (var cmd = new SqlCommand("sp_ListarProductos", conexion))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    using (var dr = cmd.ExecuteReader())
+                    {
+                        while (dr.Read())
+                        {
+                            lista.Add(new Producto
+                            {
+                                IdProducto = Convert.ToInt32(dr["id_producto"]),
+                                Nombre = dr["nombre"].ToString(),
+                                Descripcion = dr["descripcion"] != DBNull.Value ? dr["descripcion"].ToString() : "",
+                                Precio = Convert.ToDecimal(dr["precio"]),
+                                IdCategoria = Convert.ToInt32(dr["id_categoria"]),
+                                IdColor = dr["id_color"] != DBNull.Value ? Convert.ToInt32(dr["id_color"]) : (int?)null,
+                                IdMaterial = dr["id_material"] != DBNull.Value ? Convert.ToInt32(dr["id_material"]) : (int?)null,
+                                Estado = Convert.ToBoolean(dr["estado"]),
+
+                                // --- LECTURA DE LOS NUEVOS CAMPOS DEL SP ---
+                                CategoriaNombre = dr["categoria_nombre"].ToString(),
+                                ColorNombre = dr["color_nombre"] != DBNull.Value ? dr["color_nombre"].ToString() : "Sin Color",
+                                MaterialTipo = dr["material_tipo"] != DBNull.Value ? dr["material_tipo"].ToString() : "Sin Material",
+                                Talla = dr["talla"].ToString(),
+                                Stock = Convert.ToInt32(dr["stock"])
+                            });
+                        }
+                    }
+                }
+            }
+            return lista;
+        }
+
+        // Registrar producto y devolver el ID generado
+        public int RegistrarProducto(Producto producto)
+        {
+            int idGenerado = 0;
+            using (var conexion = new SqlConnection(_cadenaConexion))
+            {
+                conexion.Open();
+                using (var cmd = new SqlCommand("sp_RegistrarProducto", conexion))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@nombre", producto.Nombre);
+                    cmd.Parameters.AddWithValue("@descripcion", producto.Descripcion ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@id_color", producto.IdColor ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@id_material", producto.IdMaterial ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@precio", producto.Precio);
+                    cmd.Parameters.AddWithValue("@id_categoria", producto.IdCategoria);
+
+                    SqlParameter paramOutput = new SqlParameter("@nuevo_id", SqlDbType.Int)
+                    {
+                        Direction = ParameterDirection.Output
+                    };
+                    cmd.Parameters.Add(paramOutput);
+
+                    cmd.ExecuteNonQuery();
+                    idGenerado = Convert.ToInt32(paramOutput.Value);
+                }
+            }
+            return idGenerado;
+        }
+
+        // Actualizar producto
+        public void ActualizarProducto(Producto producto)
+        {
+            using (var conexion = new SqlConnection(_cadenaConexion))
+            {
+                conexion.Open();
+                using (var cmd = new SqlCommand("sp_ActualizarProducto", conexion))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@id_producto", producto.IdProducto);
+                    cmd.Parameters.AddWithValue("@nombre", producto.Nombre);
+                    cmd.Parameters.AddWithValue("@descripcion", producto.Descripcion ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@id_color", producto.IdColor ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@id_material", producto.IdMaterial ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@precio", producto.Precio);
+                    cmd.Parameters.AddWithValue("@id_categoria", producto.IdCategoria);
+
+                    cmd.ExecuteNonQuery();
+                }
+            }
+        }
+
+        // Cambiar Estado (Activo / Inactivo)
+        public void CambiarEstadoProducto(int idProducto, bool estado)
+        {
+            using (var conexion = new SqlConnection(_cadenaConexion))
+            {
+                conexion.Open();
+                using (var cmd = new SqlCommand("sp_CambiarEstadoProducto", conexion))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@id_producto", idProducto);
+                    cmd.Parameters.AddWithValue("@estado", estado);
+                    cmd.ExecuteNonQuery();
+                }
+            }
+        }
+
+        // Guardar o actualizar stock de tallas
+        public void GuardarProductoTallaStock(int idProducto, int idTalla, int stock)
+        {
+            using (var conexion = new SqlConnection(_cadenaConexion))
+            {
+                conexion.Open();
+                using (var cmd = new SqlCommand("sp_GuardarProductoTallaStock", conexion))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@id_producto", idProducto);
+                    cmd.Parameters.AddWithValue("@id_talla", idTalla);
+                    cmd.Parameters.AddWithValue("@stock", stock);
+                    cmd.ExecuteNonQuery();
+                }
+            }
+        }
+
+        // Registrar imagen asociada
+        public void RegistrarImagen(int idProducto, string imagenUrl)
+        {
+            using (var conexion = new SqlConnection(_cadenaConexion))
+            {
+                conexion.Open();
+                using (var cmd = new SqlCommand("sp_RegistrarProductoImagen", conexion))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@id_producto", idProducto);
+                    cmd.Parameters.AddWithValue("@imagen_url", imagenUrl);
+                    cmd.ExecuteNonQuery();
+                }
+            }
+        }
+    }
+}
