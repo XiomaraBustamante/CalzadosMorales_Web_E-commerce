@@ -1,0 +1,224 @@
+﻿@{
+    var controladorActual = ViewContext.RouteData.Values["controller"]?.ToString();
+    var accionActual = ViewContext.RouteData.Values["action"]?.ToString();
+}
+
+<nav class="sidebar sidebar-offcanvas" id="sidebar">
+    <ul class="nav">
+
+        <!-- PERFIL -->
+        <li class="nav-item nav-profile">
+            <a href="#" class="nav-link">
+                <div class="nav-profile-image d-flex align-items-center justify-content-center">
+                    <i class="mdi mdi-account-circle text-primary" style="font-size: 2.5rem;"></i>
+                    <span class="login-status online"></span>
+                </div>
+
+                <div class="nav-profile-text d-flex flex-column ms-3">
+                    <span class="font-weight-bold mb-1">Nombre Usuario</span>
+                    <span class="text-secondary text-small">Rol</span>
+                </div>
+
+                <i class="mdi mdi-bookmark-check text-success nav-profile-badge"></i>
+            </a>
+        </li>
+
+
+        <!-- DASHBOARD -->
+        <li class="nav-item">
+            <a class="nav-link @(controladorActual == "Admin" && accionActual == "Dashboard" ? "active" : "")"
+               asp-controller="Admin"
+               asp-action="Dashboard">
+
+                <span class="menu-title">Dashboard</span>
+                <i class="mdi mdi-view-dashboard menu-icon"></i>
+
+            </a>
+        </li>
+
+
+        <!-- ALMACÉN -->
+        <li class="nav-item">
+
+            <a class="nav-link"
+               data-bs-toggle="collapse"
+               href="#ui-almacen"
+               aria-expanded="false">
+
+                <span class="menu-title">Almacén</span>
+                <i class="menu-arrow"></i>
+                <i class="mdi mdi-archive menu-icon"></i>
+
+            </a>
+
+            <div class="collapse" id="ui-almacen">
+
+                <ul class="nav flex-column sub-menu">
+
+                    <li class="nav-item">
+                        <a class="nav-link @(controladorActual == "Categoria" ? "active" : "")"
+                           asp-controller="Categoria"
+                           asp-action="Index">
+                            Categorías
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link @(controladorActual == "Color" ? "active" : "")"
+                           asp-controller="Color"
+                           asp-action="Index">
+                            Colores
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link @(controladorActual == "Talla" ? "active" : "")"
+                           asp-controller="Talla"
+                           asp-action="Index">
+                            Tallas
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link @(controladorActual == "Material" ? "active" : "")"
+                           asp-controller="Material"
+                           asp-action="Index">
+                            Materiales
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link @(controladorActual == "Producto" ? "active" : "")"
+                           asp-controller="Producto"
+                           asp-action="Index">
+                            Productos
+                        </a>
+                    </li>
+
+                </ul>
+
+            </div>
+        </li>
+
+
+        <!-- VENTAS & CLIENTES -->
+        <li class="nav-item">
+
+            <a class="nav-link"
+               data-bs-toggle="collapse"
+               href="#ui-ventas"
+               aria-expanded="false">
+
+                <span class="menu-title">Ventas & Clientes</span>
+                <i class="menu-arrow"></i>
+                <i class="mdi mdi-cash-register menu-icon"></i>
+
+            </a>
+
+            <div class="collapse" id="ui-ventas">
+
+                <ul class="nav flex-column sub-menu">
+
+                    <li class="nav-item">
+                        <a class="nav-link @(controladorActual == "Cliente" ? "active" : "")"
+                           asp-controller="Cliente"
+                           asp-action="Index">
+                            Gestión Clientes
+                        </a>
+                    </li>
+
+                </ul>
+
+            </div>
+        </li>
+
+
+        <!-- REPORTES -->
+        <li class="nav-item">
+
+            <a class="nav-link"
+               data-bs-toggle="collapse"
+               href="#ui-reportes"
+               aria-expanded="false">
+
+                <span class="menu-title">Reportes</span>
+                <i class="menu-arrow"></i>
+                <i class="mdi mdi-chart-bar menu-icon"></i>
+
+            </a>
+
+            <div class="collapse" id="ui-reportes">
+
+                <ul class="nav flex-column sub-menu">
+
+                    <li class="nav-item">
+                        <a class="nav-link @(controladorActual == "Reporte" && accionActual == "ConsultaStock" ? "active" : "")"
+                           asp-controller="Reporte"
+                           asp-action="ConsultaStock">
+                            Consulta Stock
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link @(controladorActual == "Reporte" && accionActual == "HistorialVentas" ? "active" : "")"
+                           asp-controller="Reporte"
+                           asp-action="HistorialVentas">
+                            Historial de Ventas
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link @(controladorActual == "Reporte" && accionActual == "VentasPorFechas" ? "active" : "")"
+                           asp-controller="Reporte"
+                           asp-action="VentasPorFechas">
+                            Ventas por Fechas
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link @(controladorActual == "Reporte" && accionActual == "AnalisisHorario" ? "active" : "")"
+                           asp-controller="Reporte"
+                           asp-action="AnalisisHorario">
+                            Análisis Horario
+                        </a>
+                    </li>
+
+                </ul>
+
+            </div>
+        </li>
+
+
+        <!-- SEGURIDAD -->
+        <li class="nav-item">
+
+            <a class="nav-link"
+               data-bs-toggle="collapse"
+               href="#ui-seguridad"
+               aria-expanded="false">
+
+                <span class="menu-title">Seguridad</span>
+                <i class="menu-arrow"></i>
+                <i class="mdi mdi-shield-account menu-icon"></i>
+
+            </a>
+
+            <div class="collapse" id="ui-seguridad">
+
+                <ul class="nav flex-column sub-menu">
+
+                    <li class="nav-item">
+                        <a class="nav-link @(controladorActual == "Usuario" ? "active" : "")"
+                           asp-controller="Usuario"
+                           asp-action="Index">
+                            Usuarios
+                        </a>
+                    </li>
+
+                </ul>
+
+            </div>
+        </li>
+
+    </ul>
+</nav>

@@ -1,49 +1,139 @@
 ﻿<!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - CalzadosMorales.Web</title>
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/CalzadosMorales.Web.styles.css" asp-append-version="true" />
+
+    <!-- Plugins CSS / Iconos de la plantilla -->
+    <link rel="stylesheet" href="~/assets/vendors/mdi/css/materialdesignicons.min.css">
+    <link rel="stylesheet" href="~/assets/vendors/css/vendor.bundle.base.css">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Estilos principales de la plantilla -->
+    <link rel="stylesheet" href="~/assets/css/style.css">
+    <link rel="shortcut icon" href="~/assets/images/favicon.ico" />
+
+    <style>
+
+            /* =========================================
+                            1. TODO EL SIDEBAR NORMAL = NEGRO
+                            ========================================= */
+
+            #sidebar .nav-item > .nav-link,
+            #sidebar .nav-item > .nav-link .menu-title,
+            #sidebar .nav-item > .nav-link .menu-icon,
+            #sidebar .nav-item > .nav-link .menu-arrow,
+            #sidebar .sub-menu .nav-item > .nav-link,
+            #sidebar .sub-menu .nav-item > .nav-link::before {
+                color: #333333 !important;
+                background-color: transparent !important;
+            }
+
+
+            /* =========================================
+                            2. SI UN GRUPO ESTÁ ABIERTO
+
+                            Almacén abierto = sigue NEGRO
+                            Ventas abierto = sigue NEGRO
+                            Reportes abierto = sigue NEGRO
+                            Seguridad abierto = sigue NEGRO
+                            ========================================= */
+
+            #sidebar .nav-item.active > .nav-link,
+            #sidebar .nav-item.active > .nav-link .menu-title,
+            #sidebar .nav-item.active > .nav-link .menu-icon,
+            #sidebar .nav-item.active > .nav-link .menu-arrow,
+            #sidebar .nav-item.active .sub-menu .nav-link,
+            #sidebar .nav-item.active .sub-menu .nav-link::before {
+                color: #333333 !important;
+                background-color: transparent !important;
+            }
+
+
+            /* =========================================
+                            3. SOLO EL ENLACE QUE REALMENTE TIENE
+                               class="active" SE PONE MORADO
+                            ========================================= */
+
+            #sidebar .nav-link.active {
+                color: #8b5cf6 !important;
+                background-color: transparent !important;
+            }
+
+                #sidebar .nav-link.active .menu-title,
+                #sidebar .nav-link.active .menu-icon,
+                #sidebar .nav-link.active .menu-arrow {
+                    color: #8b5cf6 !important;
+                }
+
+
+            /* =========================================
+                            4. SUBMENÚ REALMENTE SELECCIONADO
+                            ========================================= */
+
+            #sidebar .sub-menu .nav-link.active {
+                color: #8b5cf6 !important;
+                background-color: transparent !important;
+            }
+
+
+            /* =========================================
+                            5. HOVER
+                            ========================================= */
+
+            #sidebar .nav-link:hover {
+                color: #8b5cf6 !important;
+                background-color: transparent !important;
+            }
+
+                #sidebar .nav-link:hover .menu-title,
+                #sidebar .nav-link:hover .menu-icon,
+                #sidebar .nav-link:hover .menu-arrow {
+                    color: #8b5cf6 !important;
+                }
+
+    </style>
+
+
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">CalzadosMorales.Web</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </nav>
-    </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
+    <div class="container-scroller">
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - CalzadosMorales.Web - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+        <!-- Barra Superior (Navbar) -->
+        @await Html.PartialAsync("_Navbar")
+
+        <div class="container-fluid page-body-wrapper">
+
+            <!-- Menú Lateral (Sidebar) -->
+            @await Html.PartialAsync("_Sidebar")
+
+            <!-- Contenido Principal -->
+            <div class="main-panel">
+                <div class="content-wrapper">
+                    @RenderBody()
+                </div>
+
+                <!-- Footer opcional -->
+                <footer class="footer">
+                    <div class="d-sm-flex justify-content-center justify-content-sm-between">
+                        <span class="text-muted text-center text-sm-left d-block d-sm-inline-block">Calzados Morales © 2026</span>
+                    </div>
+                </footer>
+            </div>
+            <!-- main-panel ends -->
         </div>
-    </footer>
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
+        <!-- page-body-wrapper ends -->
+    </div>
+    <!-- container-scroller -->
+    <!-- plugins:js -->
+    <script src="~/assets/vendors/js/vendor.bundle.base.js"></script>
+    <!-- inject:js -->
+    <script src="~/assets/js/off-canvas.js"></script>
+    <script src="~/assets/js/hoverable-collapse.js"></script>
+    <script src="~/assets/js/misc.js"></script>
+
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

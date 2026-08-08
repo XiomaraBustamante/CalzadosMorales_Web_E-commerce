@@ -1,0 +1,271 @@
+﻿@model IEnumerable<CalzadosMorales.Web.Models.ReporteVentasRangoVM>
+
+@{
+    ViewData["Title"] = "Reporte de Ventas por Fechas";
+    bool busquedaRealizada = ViewBag.BusquedaRealizada ?? false;
+    string fechaInicio = ViewBag.FechaInicio ?? "";
+    string fechaFin = ViewBag.FechaFin ?? "";
+    decimal sumatoriaTotal = ViewBag.SumatoriaTotal ?? 0;
+}
+
+<head>
+    <style>
+            /* CONTROLES SUPERIORES */
+            .dataTables_wrapper .row:first-child {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-bottom: 25px;
+                padding: 0;
+            }
+
+            /* "Mostrar" como combito a la izquierda */
+            .dataTables_length label {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                font-weight: 500;
+                color: #3e4b5b;
+                margin-bottom: 0;
+            }
+
+            .dataTables_length select {
+                width: 70px !important;
+                height: 35px !important;
+                border: 1px solid #ebedf2;
+                border-radius: 4px;
+            }
+
+            /* "Buscar" esquinado a la derecha con tamaño adecuado */
+            .dataTables_filter {
+                text-align: right;
+                display: flex;
+                justify-content: flex-end;
+            }
+
+                .dataTables_filter label {
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                    font-weight: 500;
+                    margin-bottom: 0;
+                }
+
+                .dataTables_filter input {
+                    width: 200px !important;
+                    height: 35px !important;
+                    border: 1px solid #ebedf2 !important;
+                    border-radius: 4px !important;
+                    padding: 5px 12px !important;
+                    outline: none;
+                }
+
+            /* PAGINACIÓN MORADA Y ESQUINADA */
+            .dataTables_wrapper .row:last-child {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-top: 25px;
+            }
+
+            .pagination {
+                justify-content: flex-end !important;
+            }
+
+                .pagination .page-item.active .page-link {
+                    background-color: #b66dff !important;
+                    border-color: #b66dff !important;
+                    color: white !important;
+                }
+
+                .pagination .page-link {
+                    color: #b66dff !important;
+                    background-color: #f2edf3;
+                    border: none;
+                    margin-left: 5px;
+                    border-radius: 4px !important;
+                    padding: 8px 14px;
+                    font-weight: 500;
+                }
+
+            /* ESTADO ESTILO "DISPONIBLE" */
+            .badge-status-v {
+                background-color: #1cc88a;
+                color: white;
+                border-radius: 4px;
+                padding: 8px 12px;
+                font-weight: bold;
+                font-size: 11px;
+                text-transform: uppercase;
+            }
+
+            .badge-danger-v {
+                background-color: #ff6258;
+                color: white;
+                border-radius: 4px;
+                padding: 8px 12px;
+                font-weight: bold;
+                font-size: 11px;
+                text-transform: uppercase;
+            }
+
+            .border-left-success {
+                border-left: 0.4rem solid #1cc88a !important;
+            }
+
+            .linea-visible {
+                border-top: 1.5px solid #ebedf2;
+                margin: 20px 0;
+            }
+
+            .custom-height {
+                height: 46px !important;
+            }
+
+            .border-custom {
+                border: 1px solid #b66dff !important;
+            }
+    </style>
+</head>
+
+<div class="content-wrapper">
+
+    <div class="page-header">
+        <h3 class="page-title">
+            <span class="page-title-icon bg-gradient-primary text-white me-2">
+                <i class="mdi mdi-calendar-range"></i>
+            </span> Reporte de Ventas por Fechas
+        </h3>
+    </div>
+
+    <!-- Filtros de Búsqueda -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <h5 class="card-title text-primary mb-3">Filtros de Búsqueda</h5>
+            <form asp-controller="Reporte" asp-action="VentasPorFechas" method="get" class="row align-items-end">
+                <div class="col-md-4">
+                    <label class="font-weight-bold text-muted">Desde:</label>
+                    <input type="date" name="fechaInicio" class="form-control custom-height border-custom" value="@fechaInicio" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="font-weight-bold text-muted">Hasta:</label>
+                    <input type="date" name="fechaFin" class="form-control custom-height border-custom" value="@fechaFin" required>
+                </div>
+                <div class="col-md-4">
+                    <button type="submit" class="btn btn-gradient-primary btn-icon-text w-100 custom-height d-flex align-items-center justify-content-center">
+                        <i class="mdi mdi-magnify btn-icon-prepend"></i> Consultar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    @if (busquedaRealizada)
+    {
+        <!-- Tarjeta de Total Vendido -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card border-left-success shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Total vendido en el periodo</div>
+                                <div class="h3 mb-0 font-weight-bold text-dark">
+                                    S/ @sumatoriaTotal.ToString("N2")
+                                </div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="mdi mdi-cash-multiple mdi-36px text-muted"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabla de Detalle -->
+        <div class="card shadow-sm border-0">
+            <div class="card-body">
+                <h4 class="card-title text-primary">Detalle de Ventas Encontradas</h4>
+                <hr class="linea-visible">
+
+                <div class="table-responsive">
+                    <table class="table table-hover" id="tablaReporteFechas" width="100%">
+                        <thead class="bg-light">
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Vendedor</th>
+                                <th>Cliente</th>
+                                <th>Comprobante</th>
+                                <th class="text-right">Monto</th>
+                                <th class="text-center">Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model != null && Model.Any())
+                            {
+                                foreach (var v in Model)
+                                {
+                                    <tr>
+                                        <td>@v.Fecha</td>
+                                        <td>@v.Vendedor</td>
+                                        <td>@v.Cliente</td>
+                                        <td class="font-weight-bold">@v.Comprobante</td>
+                                        <td class="text-right font-weight-bold text-dark">
+                                            S/ @v.Monto.ToString("N2")
+                                        </td>
+                                        <td class="text-center">
+                                            @if (v.Estado == "REGISTRADA")
+                                            {
+                                                <span class="badge badge-status-v">REGISTRADA</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge badge-danger-v">@v.Estado</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <!-- Mensaje inicial cuando no se ha buscado -->
+        <div class="text-center py-5">
+            <i class="mdi mdi-calendar-search text-muted mdi-48px" style="font-size: 48px;"></i>
+            <h4 class="text-muted mt-3">Seleccione un rango de fechas para generar el reporte</h4>
+        </div>
+    }
+
+</div>
+
+@section Scripts {
+    <script src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.21/js/dataTables.bootstrap4.min.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            if ($('#tablaReporteFechas').length) {
+                $('#tablaReporteFechas').DataTable({
+                    "dom": '<"row"<"col-sm-6"l><"col-sm-6 text-right"f>>' +
+                        '<"row"<"col-sm-12"tr>>' +
+                        '<"row"<"col-sm-6"i><"col-sm-6"p>>',
+                    "language": {
+                        "lengthMenu": "Mostrar _MENU_ registros",
+                        "search": "Buscar:",
+                        "info": "Página _PAGE_ de _PAGES_",
+                        "paginate": { "next": "Siguiente", "previous": "Anterior" },
+                        "emptyTable": "No se encontraron ventas"
+                    },
+                    "order": [[0, "desc"]],
+                    "pageLength": 10
+                });
+            }
+        });
+    </script>
+}

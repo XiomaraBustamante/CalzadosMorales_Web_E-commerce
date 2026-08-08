@@ -1,11 +1,13 @@
 ﻿using CalzadosMorales.Web.Servicios;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
 namespace CalzadosMorales.Web.Controllers
 {
+    [Authorize]
     public class UsuarioController : Controller
     {
         private readonly UsuarioService _usuarioService;
@@ -13,47 +15,6 @@ namespace CalzadosMorales.Web.Controllers
         public UsuarioController(UsuarioService usuarioService)
         {
             _usuarioService = usuarioService;
-        }
-
-        // ==========================================
-        // ACCIONES DE AUTENTICACIÓN (LOGIN / LOGOUT)
-        // ==========================================
-
-        [HttpGet]
-        public IActionResult Login()
-        {
-            return View();
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> Login(string usuario, string clave)
-        {
-            var user = _usuarioService.ValidarUsuario(usuario, clave);
-
-            if (user != null)
-            {
-                var claims = new List<Claim>
-                {
-                    new Claim(ClaimTypes.NameIdentifier, user.IdUsuario.ToString()),
-                    new Claim(ClaimTypes.Name, user.Nombre),
-                    new Claim(ClaimTypes.Role, user.Rol.Nombre)
-                };
-
-                var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-
-                await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(claimsIdentity));
-
-                return RedirectToAction("Index", "Home");
-            }
-
-            ViewData["Error"] = "Usuario o contraseña incorrectos, o cuenta inactiva.";
-            return View();
-        }
-
-        public async Task<IActionResult> Logout()
-        {
-            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-            return RedirectToAction("Login", "Usuario");
         }
 
         // ==========================================

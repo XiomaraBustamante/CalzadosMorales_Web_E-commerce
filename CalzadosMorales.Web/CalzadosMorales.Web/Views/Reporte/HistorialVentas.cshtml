@@ -1,0 +1,258 @@
+﻿@model IEnumerable<CalzadosMorales.Web.Models.ReporteVentaVM>
+
+@{
+    ViewData["Title"] = "Historial General de Ventas";
+}
+
+<style>
+    /* CONTROLES SUPERIORES (DataTables / Filtros) */
+    .dataTables_wrapper .row:first-child {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 25px;
+        padding: 0;
+    }
+
+    .dataTables_length {
+        text-align: left;
+    }
+
+        .dataTables_length label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+            color: #343a40;
+            margin-bottom: 0;
+        }
+
+        .dataTables_length select {
+            width: 70px !important;
+            height: 35px !important;
+            border: 1px solid #ebedf2;
+            border-radius: 4px;
+            padding: 5px;
+        }
+
+    .dataTables_filter {
+        text-align: right;
+        display: flex;
+        justify-content: flex-end;
+    }
+
+        .dataTables_filter label {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 10px;
+            font-weight: 500;
+            margin-bottom: 0;
+        }
+
+        .dataTables_filter input {
+            width: 200px !important;
+            height: 35px !important;
+            border: 1px solid #ebedf2 !important;
+            border-radius: 4px !important;
+            padding: 5px 12px !important;
+            outline: none;
+            margin-left: 0 !important;
+        }
+
+    /* PAGINACIÓN ESQUINADA */
+    .dataTables_wrapper .row:last-child {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: 25px;
+    }
+
+    .dataTables_info {
+        font-weight: 500;
+        color: #6c757d;
+        padding-top: 0 !important;
+    }
+
+    .pagination {
+        justify-content: flex-end !important;
+    }
+
+        /* Estilo Morado de Paginación */
+        .pagination .page-item.active .page-link {
+            background-color: #b66dff !important;
+            border-color: #b66dff !important;
+            color: white !important;
+        }
+
+        .pagination .page-link {
+            color: #b66dff !important;
+            background-color: #f2edf3;
+            border: none;
+            margin-left: 5px;
+            border-radius: 4px !important;
+            padding: 8px 14px;
+            font-weight: 500;
+        }
+
+    /* Badges de Estado */
+    .badge-status {
+        background-color: #1cc88a;
+        color: white;
+        border-radius: 4px;
+        padding: 8px 12px;
+        font-weight: bold;
+        font-size: 11px;
+    }
+
+    .badge-danger-custom {
+        background-color: #ff6258;
+        color: white;
+        border-radius: 4px;
+        padding: 8px 12px;
+        font-weight: bold;
+        font-size: 11px;
+    }
+
+    .linea-visible {
+        border-top: 1.5px solid #ebedf2;
+        margin: 20px 0;
+    }
+
+    .table {
+        border-top: none !important;
+    }
+
+    .btn-gradient-success {
+        background: linear-gradient(to right, #11998e, #38ef7d) !important;
+        border: none;
+        color: white;
+    }
+
+    /* Botón oscuro redondo para imprimir (estilo plantilla purple) */
+    .btn-action-print {
+        background-color: #3e4b5b !important;
+        border: none;
+        color: white;
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: background-color 0.2s;
+    }
+
+        .btn-action-print:hover {
+            background-color: #2c3540 !important;
+            color: white;
+        }
+</style>
+
+<div class="content-wrapper">
+    <div class="page-header">
+        <h3 class="page-title">
+            <span class="page-title-icon bg-gradient-primary text-white me-2">
+                <i class="mdi mdi-history"></i>
+            </span> Historial General de Ventas
+        </h3>
+        <!-- Botón de Exportar Excel (Ajustar la ruta si el endpoint está en otro controlador) -->
+        <a href="@Url.Action("ExportarExcel", "Reporte")" class="btn btn-gradient-success btn-icon-text">
+            <i class="mdi mdi-file-excel btn-icon-prepend"></i> Exportar Excel
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-12 grid-margin stretch-card">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h4 class="card-title">Listado De Ventas</h4>
+                    <hr class="linea-visible">
+
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="tablaHistorialAdmin" width="100%">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th>Fecha / Hora</th>
+                                    <th>Vendedor</th>
+                                    <th>Comprobante</th>
+                                    <th>Cliente</th>
+                                    <th class="text-right">Total</th>
+                                    <th class="text-center">Estado</th>
+                                    <th class="text-center">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model != null && Model.Any())
+                                {
+                                    foreach (var v in Model)
+                                    {
+                                        <tr>
+                                            <td>@v.Fecha</td>
+                                            <td>
+                                                <i class="mdi mdi-account text-primary me-1"></i>
+                                                <span>@v.Vendedor</span>
+                                            </td>
+                                            <td class="font-weight-bold">@v.Comprobante</td>
+                                            <td>@v.Cliente</td>
+                                            <td class="text-right font-weight-bold">
+                                                S/ @v.Total.ToString("N2")
+                                            </td>
+                                            <td class="text-center">
+                                                @if (v.Estado == "REGISTRADA")
+                                                {
+                                                    <span class="badge badge-status">REGISTRADA</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge badge-danger-custom">@v.Estado</span>
+                                                }
+                                            </td>
+                                            <td class="text-center">
+                                                <!-- Acción de ver/imprimir comprobante (Cambiar ruta ID según tu proyecto) -->
+                                                <a href="@Url.Action("VerPDF", "Ventas", new { id = v.Id })"
+                                                   target="_blank"
+                                                   class="btn-action-print"
+                                                   title="Imprimir Comprobante">
+                                                    <i class="mdi mdi-printer"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Scripts de DataTables necesarios para la paginación y búsqueda avanzada -->
+@section Scripts {
+    <script src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.21/js/dataTables.bootstrap4.min.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            $('#tablaHistorialAdmin').DataTable({
+                "dom": '<"row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6 text-right"f>>' +
+                    '<"row"<"col-sm-12"tr>>' +
+                    '<"row"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7"p>>',
+                "language": {
+                    "lengthMenu": "Mostrar _MENU_ registros",
+                    "search": "Buscar:",
+                    "info": "Página _PAGE_ de _PAGES_",
+                    "paginate": {
+                        "next": "Siguiente",
+                        "previous": "Anterior"
+                    },
+                    "emptyTable": "No se encontraron ventas"
+                },
+                "order": [[0, "desc"]],
+                "pageLength": 10
+            });
+        });
+    </script>
+}

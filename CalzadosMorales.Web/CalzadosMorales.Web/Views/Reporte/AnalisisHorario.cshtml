@@ -1,0 +1,225 @@
+﻿@model IEnumerable<CalzadosMorales.Web.Models.AnalisisHorarioVM>
+
+@{
+    ViewData["Title"] = "Análisis Horario de Ventas";
+}
+
+<head>
+    <style>
+            /* CONTROLES SUPERIORES */
+            .dataTables_wrapper .row:first-child {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-bottom: 25px;
+                padding: 0 5px;
+            }
+
+            /* "Mostrar" a la izquierda */
+            .dataTables_length label {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                font-weight: 500;
+                color: #343a40;
+                margin-bottom: 0;
+            }
+
+            .dataTables_length select {
+                width: 70px !important;
+                height: 35px !important;
+                border: 1px solid #ebedf2;
+                border-radius: 4px;
+            }
+
+            /* "Buscar" ESQUINADO A LA DERECHA */
+            .dataTables_filter {
+                text-align: right;
+                display: flex;
+                justify-content: flex-end;
+            }
+
+                .dataTables_filter label {
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                    font-weight: 500;
+                    margin-bottom: 0;
+                }
+
+                .dataTables_filter input {
+                    width: 200px !important;
+                    height: 35px !important;
+                    border: 1px solid #ebedf2 !important;
+                    border-radius: 4px !important;
+                    padding: 5px 12px !important;
+                    outline: none;
+                }
+
+            /* PAGINACIÓN ESQUINADA Y MORADA */
+            .dataTables_wrapper .row:last-child {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-top: 25px;
+            }
+
+            .pagination {
+                justify-content: flex-end !important;
+            }
+
+                .pagination .page-item.active .page-link {
+                    background-color: #b66dff !important;
+                    border-color: #b66dff !important;
+                    color: white !important;
+                }
+
+                .pagination .page-link {
+                    color: #b66dff !important;
+                    background-color: #f2edf3;
+                    border: none;
+                    margin-left: 5px;
+                    border-radius: 4px !important;
+                    padding: 8px 14px;
+                    font-weight: 500;
+                }
+
+            /* ESTILOS DE LA TABLA */
+            #tablaAnalisisHorario thead th {
+                background-color: #f8f9fa;
+                font-weight: 700;
+                color: #3e4b5b;
+                text-transform: uppercase;
+                font-size: 0.8rem;
+            }
+
+            /* Badges de bloque horario */
+            .bloque-badge {
+                border-radius: 4px;
+                padding: 6px 10px;
+                font-weight: bold;
+                font-size: 11px;
+                color: white;
+                display: inline-block;
+            }
+
+            .bg-manana {
+                background-color: #ff9f43;
+            }
+
+            .bg-almuerzo {
+                background-color: #1cc88a;
+            }
+
+            .bg-tarde {
+                background-color: #b66dff;
+            }
+
+            .bg-cierre {
+                background-color: #ff6258;
+            }
+
+            .linea-visible {
+                border-top: 1.5px solid #ebedf2;
+                margin: 20px 0;
+            }
+    </style>
+</head>
+
+<div class="content-wrapper">
+
+    <div class="page-header">
+        <h3 class="page-title">
+            <span class="page-title-icon bg-gradient-primary text-white me-2">
+                <i class="mdi mdi-chart-line"></i>
+            </span> Análisis Horario de Ventas
+        </h3>
+    </div>
+
+    <div class="row">
+        <div class="col-12 grid-margin stretch-card">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <h4 class="card-title text-primary">Rendimiento por Bloques y Horas</h4>
+                    <hr class="linea-visible">
+
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="tablaAnalisisHorario" width="100%">
+                            <thead>
+                                <tr>
+                                    <th>Hora (24h)</th>
+                                    <th>Bloque Horario</th>
+                                    <th class="text-center">N° Ventas</th>
+                                    <th class="text-right">Monto Recaudado</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model != null && Model.Any())
+                                {
+                                    foreach (var a in Model)
+                                    {
+                                        string badgeClass = a.BloqueHorario switch
+                                        {
+                                            "Mañana Temprano" => "bg-manana",
+                                            "Hora Almuerzo" => "bg-almuerzo",
+                                            "Tarde/Noche" => "bg-tarde",
+                                            _ => "bg-cierre"
+                                        };
+
+                                        <tr>
+                                            <td class="font-weight-bold text-primary">
+                                                <i class="mdi mdi-clock-outline me-1"></i>
+                                                <span>@a.HoraDelDia.ToString("D2"):00</span>
+                                            </td>
+                                            <td>
+                                                <span class="bloque-badge @badgeClass">
+                                                    @a.BloqueHorario
+                                                </span>
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="badge badge-outline-dark px-2 py-1">@a.NumeroDeVentas</span>
+                                            </td>
+                                            <td class="text-right font-weight-bold text-dark">
+                                                S/ @a.MontoRecaudado.ToString("N2")
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+@section Scripts {
+    <script src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.21/js/dataTables.bootstrap4.min.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            if ($('#tablaAnalisisHorario').length) {
+                $('#tablaAnalisisHorario').DataTable({
+                    "dom": '<"row"<"col-sm-6"l><"col-sm-6 text-right"f>>' +
+                        '<"row"<"col-sm-12"tr>>' +
+                        '<"row"<"col-sm-6"i><"col-sm-6"p>>',
+                    "language": {
+                        "lengthMenu": "Mostrar _MENU_ registros",
+                        "search": "Buscar:",
+                        "info": "Página _PAGE_ de _PAGES_",
+                        "paginate": {
+                            "next": "Siguiente",
+                            "previous": "Anterior"
+                        },
+                        "emptyTable": "No hay datos para el análisis"
+                    },
+                    "order": [[0, "asc"]],
+                    "pageLength": 12
+                });
+            }
+        });
+    </script>
+}

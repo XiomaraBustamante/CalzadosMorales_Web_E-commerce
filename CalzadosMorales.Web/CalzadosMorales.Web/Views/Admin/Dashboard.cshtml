@@ -1,0 +1,190 @@
+﻿@{
+    ViewData["Title"] = "Dashboard Administrador";
+    Layout = "_Layout";
+}
+
+<style>
+    /* Estilo exacto para que tengan la misma proporción alargada de tu captura */
+    .tarjeta-exacta {
+        min-height: 140px !important;
+        max-height: 140px !important;
+        border-radius: 8px !important;
+    }
+
+        .tarjeta-exacta .card-body {
+            padding: 1.2rem 1.5rem !important;
+        }
+</style>
+
+<div class="content-wrapper">
+    <!-- Encabezado de Bienvenida -->
+    <div class="page-header">
+        <h3 class="page-title">
+            <span class="page-title-icon bg-gradient-primary text-white me-2"><i class="mdi mdi-home"></i></span>
+            ¡Hola, Administrador!
+        </h3>
+    </div>
+
+    <!-- Fila de Tarjetas Superiores (Diseño idéntico a tu referencia) -->
+    <div class="row">
+        <!-- Tarjeta 1: Ingresos -->
+        <div class="col-xl col-md-4 stretch-card grid-margin">
+            <div class="card bg-gradient-primary card-img-holder text-white tarjeta-exacta">
+                <div class="card-body">
+                    <h4 class="font-weight-normal mb-2" style="font-size: 0.85rem; letter-spacing: 0.5px;">
+                        INGRESOS DE HOY
+                        <i class="mdi mdi-chart-line float-right" style="font-size: 1.2rem;"></i>
+                    </h4>
+                    <h2 class="mb-0" style="font-size: 1.8rem; font-weight: 700;">S/ @string.Format("{0:N2}", ViewBag.CajaHoy)</h2>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tarjeta 2: Ventas -->
+        <div class="col-xl col-md-4 stretch-card grid-margin">
+            <div class="card bg-gradient-info card-img-holder text-white tarjeta-exacta">
+                <div class="card-body">
+                    <h4 class="font-weight-normal mb-2" style="font-size: 0.85rem; letter-spacing: 0.5px;">
+                        VENTAS DE HOY
+                        <i class="mdi mdi-run float-right" style="font-size: 1.2rem;"></i>
+                    </h4>
+                    <h2 class="mb-0" style="font-size: 1.8rem; font-weight: 700;">@ViewBag.CantidadVentasHoy</h2>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tarjeta 3: Sin Stock -->
+        <div class="col-xl col-md-4 stretch-card grid-margin">
+            <div class="card bg-gradient-danger card-img-holder text-white tarjeta-exacta">
+                <div class="card-body">
+                    <h4 class="font-weight-normal mb-2" style="font-size: 0.85rem; letter-spacing: 0.5px;">
+                        PRODUCTOS SIN STOCK
+                        <i class="mdi mdi-alert float-right" style="font-size: 1.2rem;"></i>
+                    </h4>
+                    <h2 class="mb-0" style="font-size: 1.8rem; font-weight: 700;">@ViewBag.StockCritico</h2>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tarjeta 4: Clientes Nuevos -->
+        <div class="col-xl col-md-4 stretch-card grid-margin">
+            <div class="card bg-gradient-warning card-img-holder text-white tarjeta-exacta">
+                <div class="card-body">
+                    <h4 class="font-weight-normal mb-2" style="font-size: 0.85rem; letter-spacing: 0.5px;">
+                        CLIENTE NUEVOS (MES)
+                        <i class="mdi mdi-account-multiple float-right" style="font-size: 1.2rem;"></i>
+                    </h4>
+                    <h2 class="mb-0" style="font-size: 1.8rem; font-weight: 700;">@ViewBag.ClientesNuevosMes</h2>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tarjeta 5: Ventas Promedio -->
+        <div class="col-xl col-md-4 stretch-card grid-margin">
+            <div class="card bg-gradient-success card-img-holder text-white tarjeta-exacta">
+                <div class="card-body">
+                    <h4 class="font-weight-normal mb-2" style="font-size: 0.85rem; letter-spacing: 0.5px;">
+                        VENTAS PROMEDIO
+                        <i class="mdi mdi-chart-pie float-right" style="font-size: 1.2rem;"></i>
+                    </h4>
+                    <h2 class="mb-0" style="font-size: 1.8rem; font-weight: 700;">S/ @string.Format("{0:N2}", ViewBag.TicketPromedio)</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gráficos -->
+    <div class="row">
+        <div class="col-md-7 grid-margin stretch-card">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title">VENTAS DE LA ULTIMA SEMANA (S/)</h4>
+                    <canvas id="graficoVentasSemana" height="150"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-5 grid-margin stretch-card">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title">STOCK POR CATEGORIA</h4>
+                    <canvas id="graficoStockCategorias"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabla Top Vendedores -->
+    <div class="row">
+        <div class="col-12 grid-margin">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title">TOP VENDEDORES DEL MES</h4>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th> Vendedor </th>
+                                    <th> Operaciones </th>
+                                    <th> Total Vendido </th>
+                                    <th> Variedad </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (ViewBag.TopVendedores != null)
+                                {
+                                    foreach (var v in ViewBag.TopVendedores)
+                                    {
+                                        <tr>
+                                            <td>@v.Vendedor</td>
+                                            <td>@v.CantidadOperaciones</td>
+                                            <td>S/ @string.Format("{0:N2}", v.MontoTotal)</td>
+                                            <td><div class="badge badge-gradient-info">@v.Variedad mod.</div></td>
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const ventasSemanales = @Html.Raw(Json.Serialize(ViewBag.VentasSemanales ?? new List<object>()));
+            const stockCategorias = @Html.Raw(Json.Serialize(ViewBag.StockCategoria ?? new List<object>()));
+
+            new Chart(document.getElementById('graficoVentasSemana'), {
+                type: 'bar',
+                data: {
+                    labels: ventasSemanales.map(i => i.fechaEtiqueta),
+                    datasets: [{ label: 'Ventas S/', data: ventasSemanales.map(i => i.totalDia), backgroundColor: '#b66dff' }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+
+            new Chart(document.getElementById('graficoStockCategorias'), {
+                type: 'doughnut',
+                data: {
+                    labels: stockCategorias.map(i => i.categoria),
+                    datasets: [{
+                        data: stockCategorias.map(i => i.totalStock),
+                        backgroundColor: ['#fe7096', '#9a55ff', '#3fe2d9', '#ffab2d', '#047edf']
+                    }]
+                },
+                options: {
+                    responsive: true
+                }
+            });
+        });
+    </script>
+}

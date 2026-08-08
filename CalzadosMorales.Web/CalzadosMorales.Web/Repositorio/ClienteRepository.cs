@@ -33,7 +33,7 @@ namespace CalzadosMorales.Web.Repositorio
                         {
                             persona = new PersonaNatural
                             {
-                                IdCliente = Convert.ToInt32(dr["id"]),
+                                IdCliente = Convert.ToInt32(dr["id_cliente"]),
                                 Dni = dr["dni"].ToString(),
                                 Nombre = dr["nombre"].ToString(),
                                 Apellido = dr["apellido"].ToString(),
@@ -167,7 +167,7 @@ namespace CalzadosMorales.Web.Repositorio
                         {
                             persona = new PersonaJuridica
                             {
-                                IdCliente = Convert.ToInt32(dr["id"]),
+                                IdCliente = Convert.ToInt32(dr["id_cliente"]),
                                 Ruc = dr["ruc"].ToString(),
                                 RazonSocial = dr["razon_social"].ToString(),
                                 RepreLegal = dr["repre_legal"].ToString(),

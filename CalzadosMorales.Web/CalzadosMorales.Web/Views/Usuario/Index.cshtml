@@ -1,0 +1,289 @@
+﻿@model List<CalzadosMorales.Web.Models.Usuario>
+
+@{
+    ViewData["Title"] = "Gestión de Usuarios";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid px-4">
+
+    <!-- Encabezado superior con icono profesional -->
+    <div class="d-flex justify-content-between align-items-center mt-4 mb-4">
+        <div class="d-flex align-items-center">
+            <div class="d-flex align-items-center justify-content-center me-3 shadow-sm"
+                 style="width: 45px; height: 45px; background: linear-gradient(135deg, #b084ff 0%, #8b5cf6 100%); border-radius: 8px;">
+                <i class="fas fa-users text-white fs-5"></i>
+            </div>
+            <h3 class="mb-0" style="font-weight: 700; color: #1e293b;">Gestión de Usuarios</h3>
+        </div>
+        <button type="button" class="btn btn-primary px-4" style="background-color: #b084ff; border-color: #b084ff; font-weight: 600;" onclick="limpiarModal()" data-bs-toggle="modal" data-bs-target="#modalUsuario">
+            + Nuevo Usuario
+        </button>
+    </div>
+
+    <!-- Contenedor principal estilo tarjeta -->
+    <div class="card shadow-sm border-0 p-4" style="background-color: #ffffff; border-radius: 8px;">
+
+        <h4 class="mb-3" style="font-weight: 700; color: #1e293b; font-size: 1.15rem;">Listado De Usuarios</h4>
+
+        <!-- Controles superiores -->
+        <div class="row align-items-center mb-3">
+            <div class="col-md-6 d-flex align-items-center">
+                <span class="me-2 fw-semibold" style="color: #475569;">Mostrar</span>
+                <select id="selectMostrar" class="form-select form-select-sm me-2 fw-semibold text-dark shadow-sm" style="width: 75px; background-color: #ffffff; border: 1px solid #cbd5e1;">
+                    <option value="10">10</option>
+                    <option value="25">25</option>
+                    <option value="50">50</option>
+                </select>
+                <span class="fw-semibold" style="color: #475569;">registros</span>
+            </div>
+            <div class="col-md-6 d-flex justify-content-end align-items-center">
+                <label class="me-2 fw-semibold" style="color: #475569;">Buscar:</label>
+                <input type="text" class="form-control form-control-sm w-50 shadow-sm" id="buscadorTabla" placeholder="" style="border: 1px solid #cbd5e1;">
+            </div>
+        </div>
+
+        <!-- Tabla de Datos -->
+        <div class="table-responsive">
+            <table id="tablaUsuarios" class="table align-middle mb-0">
+                <thead style="background-color: #f8f9fa; border-top: 1px solid #dee2e6; border-bottom: 2px solid #dee2e6;">
+                    <tr>
+                        <th style="width: 8%; color: #475569; font-weight: 700;" class="py-3">ID ↕</th>
+                        <th style="width: 25%; color: #475569; font-weight: 700;" class="py-3">Nombre Completo ↕</th>
+                        <th style="width: 20%; color: #475569; font-weight: 700;" class="py-3">Usuario ↕</th>
+                        <th style="width: 17%; color: #475569; font-weight: 700;" class="py-3">Rol ↕</th>
+                        <th style="width: 15%; color: #475569; font-weight: 700;" class="py-3 text-center">Estado ↕</th>
+                        <th style="width: 15%; color: #475569; font-weight: 700;" class="py-3 text-center">Acciones ↕</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var item in Model)
+                        {
+                            <tr style="border-bottom: 1px solid #f1f1f1;">
+                                <td class="fw-bold text-secondary">@item.IdUsuario</td>
+                                <td style="color: #4a5568;">@item.Nombre</td>
+                                <td style="color: #4a5568;">@item.UserLogin</td>
+                                <td>
+                                    <span class="badge px-3 py-2 text-white" style="background-color: #6366f1; font-weight: 500; font-size: 0.85rem;">@item.Rol?.Nombre</span>
+                                </td>
+                                <td class="text-center">
+                                    @if (item.Estado)
+                                    {
+                                        <span class="badge px-3 py-2 text-white" style="background-color: #20c997; font-weight: 500; font-size: 0.85rem;">Activo</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge px-3 py-2 bg-secondary text-white" style="font-weight: 500; font-size: 0.85rem;">Inactivo</span>
+                                    }
+                                </td>
+                                <td class="text-center">
+                                    @if (item.Estado)
+                                    {
+                                        <button class="btn btn-sm me-1 shadow-sm" style="background-color: #e0f2fe; color: #0284c7;"
+                                                onclick="cargarDatos(this)"
+                                                data-id="@item.IdUsuario"
+                                                data-nombre="@item.Nombre"
+                                                data-usuario="@item.UserLogin"
+                                                data-idrol="@item.IdRol"
+                                                data-bs-toggle="modal" data-bs-target="#modalUsuario"
+                                                title="Editar">
+                                            <i class="fas fa-pen"></i>
+                                        </button>
+
+                                        <form asp-action="CambiarEstado" asp-controller="Usuario" method="post" class="d-inline">
+                                            <input type="hidden" name="idUsuario" value="@item.IdUsuario" />
+                                            <input type="hidden" name="estado" value="false" />
+                                            <button type="submit" class="btn btn-sm shadow-sm" style="background-color: #ffe4e6; color: #f43f5e;" title="Desactivar">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </form>
+                                    }
+                                    else
+                                    {
+                                        <form asp-action="CambiarEstado" asp-controller="Usuario" method="post" class="d-inline">
+                                            <input type="hidden" name="idUsuario" value="@item.IdUsuario" />
+                                            <input type="hidden" name="estado" value="true" />
+                                            <button type="submit" class="btn btn-sm shadow-sm" style="background-color: #d1fae5; color: #059669;" title="Activar">
+                                                <i class="fas fa-check"></i>
+                                            </button>
+                                        </form>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="6" class="text-center py-4 text-muted">No hay usuarios registrados.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Paginación inferior -->
+        <div class="row align-items-center mt-4">
+            <div class="col-md-6 fw-bold" style="color: #334155; font-size: 0.95rem;">
+                Página 1 de 1
+            </div>
+            <div class="col-md-6 d-flex justify-content-end">
+                <nav>
+                    <ul class="pagination mb-0">
+                        <li class="page-item disabled">
+                            <span class="page-link fw-bold text-muted px-3 py-2" style="font-size: 0.95rem;">Anterior</span>
+                        </li>
+                        <li class="page-item active">
+                            <span class="page-link text-white fw-bold px-3 py-2 shadow-sm" style="background-color: #8b5cf6; border-color: #8b5cf6; font-size: 0.95rem;">1</span>
+                        </li>
+                        <li class="page-item disabled">
+                            <span class="page-link fw-bold text-muted px-3 py-2" style="font-size: 0.95rem;">Siguiente</span>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- MODAL PARA REGISTRAR / EDITAR USUARIO -->
+<div class="modal fade" id="modalUsuario" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-light">
+                <h5 class="modal-title fw-bold text-dark" id="modalTitle">Nuevo Usuario</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <form id="formUsuario" asp-action="Registrar" asp-controller="Usuario" method="post" class="needs-validation" novalidate>
+                <div class="modal-body py-4">
+                    <input type="hidden" id="id_usuario" name="idUsuario" value="0">
+
+                    <div class="form-group mb-3">
+                        <label class="form-label fw-bold text-dark">Nombre Completo</label>
+                        <input type="text" class="form-control" id="nombre" name="nombre" required placeholder="Ej: Juan Pérez">
+                        <div class="invalid-feedback">
+                            Por favor ingrese el nombre completo.
+                        </div>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label class="form-label fw-bold text-dark">Usuario (Login)</label>
+                        <input type="text" class="form-control" id="usuario" name="usuario" required placeholder="Ej: jperez">
+                        <div class="invalid-feedback">
+                            Por favor ingrese el nombre de usuario.
+                        </div>
+                    </div>
+
+                    <div class="form-group mb-3" id="grupoClave">
+                        <label class="form-label fw-bold text-dark">Contraseña</label>
+                        <input type="password" class="form-control" id="clave" name="clave" required placeholder="••••••••">
+                        <div class="invalid-feedback">
+                            Por favor ingrese una contraseña.
+                        </div>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label class="form-label fw-bold text-dark">Rol</label>
+                        <select class="form-select" id="idRol" name="idRol" required>
+                            <option value="">Seleccione un rol...</option>
+                            @if (ViewBag.Roles != null)
+                            {
+                                foreach (var rol in ViewBag.Roles)
+                                {
+                                    <option value="@rol.IdRol">@rol.Nombre</option>
+                                }
+                            }
+                        </select>
+                        <div class="invalid-feedback">
+                            Por favor seleccione un rol.
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary px-3" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary px-4 text-white" style="background-color: #8b5cf6; border-color: #8b5cf6; font-weight: 600;">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Filtrar registros en tiempo real con el buscador superior
+        document.getElementById('buscadorTabla').addEventListener('keyup', function() {
+            var filtro = this.value.toLowerCase();
+            var filas = document.querySelectorAll('#tablaUsuarios tbody tr');
+
+            filas.forEach(function(fila) {
+                var textoFila = fila.textContent.toLowerCase();
+                if (textoFila.includes(filtro)) {
+                    fila.style.display = '';
+                } else {
+                    fila.style.display = 'none';
+                }
+            });
+        });
+
+        // Cargar datos en el modal para la opción Editar
+        function cargarDatos(elemento) {
+            var id = elemento.getAttribute('data-id');
+            var nombre = elemento.getAttribute('data-nombre');
+            var usuario = elemento.getAttribute('data-usuario');
+            var idRol = elemento.getAttribute('data-idrol');
+
+            document.getElementById('id_usuario').value = id;
+            document.getElementById('nombre').value = nombre;
+            document.getElementById('usuario').value = usuario;
+            document.getElementById('idRol').value = idRol;
+            document.getElementById('modalTitle').innerText = "Editar Usuario";
+
+            var form = document.getElementById('formUsuario');
+            form.action = '/Usuario/Actualizar';
+
+            // Al editar, ocultamos y quitamos la obligatoriedad de la clave (para no sobreescribirla por accidente)
+            document.getElementById('grupoClave').style.display = 'none';
+            document.getElementById('clave').removeAttribute('required');
+
+            document.querySelector('.needs-validation').classList.remove('was-validated');
+        }
+
+        // Limpiar el modal para la opción Nuevo Usuario
+        function limpiarModal() {
+            document.getElementById('id_usuario').value = '0';
+            document.getElementById('nombre').value = '';
+            document.getElementById('usuario').value = '';
+            document.getElementById('clave').value = '';
+            document.getElementById('idRol').value = '';
+            document.getElementById('modalTitle').innerText = "Nuevo Usuario";
+
+            var form = document.getElementById('formUsuario');
+            form.action = '/Usuario/Registrar';
+
+            // Al crear, mostramos y exigimos la contraseña
+            document.getElementById('grupoClave').style.display = 'block';
+            document.getElementById('clave').setAttribute('required', 'required');
+
+            document.querySelector('.needs-validation').classList.remove('was-validated');
+        }
+
+        // Validación de Bootstrap para formularios
+        (function() {
+            'use strict'
+            var forms = document.querySelectorAll('.needs-validation')
+            Array.prototype.slice.call(forms).forEach(function(form) {
+                form.addEventListener('submit', function(event) {
+                    if (!form.checkValidity()) {
+                        event.preventDefault()
+                        event.stopPropagation()
+                    }
+                    form.classList.add('was-validated')
+                }, false)
+            })
+        })();
+    </script>
+}

@@ -1,0 +1,198 @@
+﻿@model IEnumerable<CalzadosMorales.Web.Models.ConsultaStockVM>
+
+@{
+    ViewData["Title"] = "Consulta de Stock Real";
+    int idCategoriaSeleccionada = ViewBag.IdCategoriaSeleccionada ?? 0;
+    string nombreTallaSeleccionada = ViewBag.NombreTallaSeleccionada ?? "";
+}
+
+<style>
+    .custom-height {
+        height: 46px !important;
+    }
+
+    .border-custom {
+        border: 1px solid #b66dff !important;
+    }
+
+    .linea-visible {
+        border-top: 1.5px solid #d1d3e2 !important;
+        opacity: 1;
+        margin: 15px 0 25px 0;
+    }
+
+    .input-group-text-custom {
+        background: linear-gradient(to right, #da8cff, #9a55ff) !important;
+        color: white !important;
+        border: none !important;
+        width: 45px;
+        display: flex;
+        justify-content: center;
+    }
+
+    .stock-box {
+        display: inline-block;
+        min-width: 40px;
+        padding: 5px;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        font-weight: bold;
+        color: #3e4b5b;
+        text-align: center;
+        background-color: white;
+    }
+
+    .table td {
+        vertical-align: middle !important;
+    }
+</style>
+
+<div class="content-wrapper">
+    <div class="page-header">
+        <h3 class="page-title">
+            <span class="page-title-icon bg-gradient-primary text-white me-2">
+                <i class="mdi mdi-archive"></i>
+            </span> Consulta de Stock Real
+        </h3>
+    </div>
+
+    <div class="row">
+        <div class="col-12 grid-margin stretch-card">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h4 class="card-title text-primary">Filtros De Búsqueda</h4>
+                    <hr class="linea-visible">
+
+                    <form asp-controller="Reporte" asp-action="ConsultaStock" method="get" class="needs-validation" novalidate>
+                        <div class="row align-items-end">
+                            <div class="col-md-4">
+                                <div class="form-group mb-0">
+                                    <label class="text-muted font-weight-bold">Categoría:</label>
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text input-group-text-custom custom-height">
+                                                <i class="mdi mdi-tag-outline"></i>
+                                            </span>
+                                        </div>
+                                        <select name="idCategoria" class="form-control custom-height border-custom">
+                                            <option value="0">-- Todas las Categorías --</option>
+                                            @if (ViewBag.ListaCategorias != null)
+                                            {
+                                                foreach (var cat in ViewBag.ListaCategorias)
+                                                {
+                                                    if (cat.IdCategoria == idCategoriaSeleccionada)
+                                                    {
+                                                        <option value="@cat.IdCategoria" selected>@cat.Nombre</option>
+                                                    }
+                                                    else
+                                                    {
+                                                        <option value="@cat.IdCategoria">@cat.Nombre</option>
+                                                    }
+                                                }
+                                            }
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="form-group mb-0">
+                                    <label class="text-muted font-weight-bold">Talla (30 - 48):</label>
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text input-group-text-custom custom-height">
+                                                <i class="mdi mdi-ruler"></i>
+                                            </span>
+                                        </div>
+                                        <input type="number" name="nombreTalla" class="form-control custom-height border-custom"
+                                               placeholder="Ej: 38" value="@nombreTallaSeleccionada" min="30" max="48">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4 d-flex">
+                                <button type="submit" class="btn btn-gradient-primary btn-icon-text me-2 custom-height flex-fill">
+                                    <i class="mdi mdi-magnify btn-icon-prepend"></i> Buscar
+                                </button>
+                                <a href="@Url.Action("ConsultaStock", "Reporte")" class="btn btn-light custom-height flex-fill border d-flex align-items-center justify-content-center">
+                                    <i class="mdi mdi-refresh me-1"></i> Limpiar
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12 grid-margin stretch-card">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h4 class="card-title text-primary">Existencias En Almacén</h4>
+                    <hr class="linea-visible">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Producto</th>
+                                    <th>Categoría</th>
+                                    <th>Talla</th>
+                                    <th>Color</th>
+                                    <th>Precio</th>
+                                    <th class="text-center">Stock</th>
+                                    <th>Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model != null && Model.Any())
+                                {
+                                    foreach (var p in Model)
+                                    {
+                                        <tr>
+                                            <td>@p.IdProducto</td>
+                                            <td class="font-weight-bold text-dark">@p.Nombre</td>
+                                            <td>@p.NombreCategoria</td>
+                                            <td>@p.NombreTalla</td>
+                                            <td>@p.NombreColor</td>
+                                            <td class="font-weight-bold">S/ @p.Precio.ToString("N2")</td>
+
+                                            <td class="text-center">
+                                                <div class="stock-box">@p.Stock</div>
+                                            </td>
+
+                                            <td>
+                                                @if (p.Stock <= 0)
+                                                {
+                                                    <span class="badge badge-danger">AGOTADO</span>
+                                                }
+                                                else if (p.Stock > 0 && p.Stock <= 5)
+                                                {
+                                                    <span class="badge badge-warning text-dark">BAJO STOCK</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge badge-success">DISPONIBLE</span>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="8" class="text-center text-muted py-5">
+                                            <i class="mdi mdi-alert-circle-outline mdi-24px"></i><br>
+                                            No se encontraron productos con los filtros seleccionados.
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

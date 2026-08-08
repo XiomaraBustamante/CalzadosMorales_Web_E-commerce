@@ -1,9 +1,11 @@
 ﻿using CalzadosMorales.Web.Models;
 using CalzadosMorales.Web.Servicios;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CalzadosMorales.Web.Controllers
 {
+    [Authorize]
     public class ProductoController : Controller
     {
         private readonly ProductoService _productoService;

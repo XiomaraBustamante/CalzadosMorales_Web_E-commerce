@@ -1,10 +1,13 @@
 ﻿using CalzadosMorales.Web.Repositorio;
 using CalzadosMorales.Web.Servicios;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace CalzadosMorales.Web.Controllers
-{
-    public class AdminController : Controller
+namespace CalzadosMorales.Web.Controllers 
+{ 
+
+    [Authorize]
+public class AdminController : Controller
     {
         private readonly AdminService _adminService;
 

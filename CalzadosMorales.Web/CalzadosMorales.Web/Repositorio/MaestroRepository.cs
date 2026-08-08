@@ -10,7 +10,7 @@ namespace CalzadosMorales.Web.Repositorio
 
         public MaestroRepository(IConfiguration configuration)
         {
-            _cadenaConexion = configuration.GetConnectionString("CadenaConexion");
+            _cadenaConexion = configuration.GetConnectionString("CadenaSQL");
         }
 
         // ================= CATEGORÍAS =================
