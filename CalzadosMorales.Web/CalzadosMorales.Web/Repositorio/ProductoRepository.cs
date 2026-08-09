@@ -20,6 +20,8 @@ namespace CalzadosMorales.Web.Repositorio
             using (var conexion = new SqlConnection(_cadenaConexion))
             {
                 conexion.Open();
+
+                // 1. Obtener los datos básicos del producto
                 using (var cmd = new SqlCommand("sp_BuscarProductoPorId", conexion))
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
@@ -42,11 +44,33 @@ namespace CalzadosMorales.Web.Repositorio
                         }
                     }
                 }
+
+                // 2. Obtener las tallas y stocks asociados
+                if (producto != null)
+                {
+                    using (var cmdTallas = new SqlCommand("sp_ListarTallasPorProducto", conexion))
+                    {
+                        cmdTallas.CommandType = CommandType.StoredProcedure;
+                        cmdTallas.Parameters.AddWithValue("@id_producto", idProducto);
+                        using (var drTallas = cmdTallas.ExecuteReader())
+                        {
+                            while (drTallas.Read())
+                            {
+                                producto.ListaTallasStock.Add(new ProductoTalla
+                                {
+                                    IdProducto = idProducto,
+                                    IdTalla = Convert.ToInt32(drTallas["id_talla"]),
+                                    Stock = Convert.ToInt32(drTallas["stock"])
+                                });
+                            }
+                        }
+                    }
+                }
             }
             return producto;
         }
 
-        // Listar todos los productos
+        // Listar todos los productos (con soporte para Tallas y Stock integrados para la vista)
         public List<Producto> ListarProductos()
         {
             var lista = new List<Producto>();
@@ -71,11 +95,11 @@ namespace CalzadosMorales.Web.Repositorio
                                 IdMaterial = dr["id_material"] != DBNull.Value ? Convert.ToInt32(dr["id_material"]) : (int?)null,
                                 Estado = Convert.ToBoolean(dr["estado"]),
 
-                                // --- LECTURA DE LOS NUEVOS CAMPOS DEL SP ---
+                                // Campos informativos y de visualización en tabla
                                 CategoriaNombre = dr["categoria_nombre"].ToString(),
                                 ColorNombre = dr["color_nombre"] != DBNull.Value ? dr["color_nombre"].ToString() : "Sin Color",
                                 MaterialTipo = dr["material_tipo"] != DBNull.Value ? dr["material_tipo"].ToString() : "Sin Material",
-                                Talla = dr["talla"].ToString(),
+                                Talla = dr["talla"] != DBNull.Value ? dr["talla"].ToString() : "N/A",
                                 Stock = Convert.ToInt32(dr["stock"])
                             });
                         }
@@ -185,5 +209,18 @@ namespace CalzadosMorales.Web.Repositorio
                 }
             }
         }
+
+        public void LimpiarTallasProducto(int idProducto)
+        {
+            using (var conexion = new SqlConnection(_cadenaConexion))
+            {
+                // Esta sentencia borra todas las tallas actuales de ese producto
+                var cmd = new SqlCommand("DELETE FROM producto_talla WHERE id_producto = @id", conexion);
+                cmd.Parameters.AddWithValue("@id", idProducto);
+                conexion.Open();
+                cmd.ExecuteNonQuery();
+            }
+        }
+
     }
 }

@@ -51,5 +51,9 @@ namespace CalzadosMorales.Web.Models
 
         [NotMapped]
         public int Stock { get; set; }
+
+        [NotMapped]
+        public List<ProductoTalla> ListaTallasStock { get; set; } = new List<ProductoTalla>();
+
     }
 }

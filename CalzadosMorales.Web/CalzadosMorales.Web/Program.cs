@@ -1,8 +1,17 @@
 using CalzadosMorales.Web.Repositorio;
 using CalzadosMorales.Web.Servicios;
+using CloudinaryDotNet;
 using Microsoft.AspNetCore.Authentication.Cookies;
 
 var builder = WebApplication.CreateBuilder(args);
+
+var cloudinaryAccount = new Account(
+    builder.Configuration["CloudinarySettings:CloudName"],
+    builder.Configuration["CloudinarySettings:ApiKey"],
+    builder.Configuration["CloudinarySettings:ApiSecret"]
+);
+var cloudinary = new Cloudinary(cloudinaryAccount);
+builder.Services.AddSingleton(cloudinary);
 
 
 builder.Services.AddControllersWithViews();

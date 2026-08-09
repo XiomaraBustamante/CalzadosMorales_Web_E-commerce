@@ -1,7 +1,14 @@
 ﻿using CalzadosMorales.Web.Models;
 using CalzadosMorales.Web.Servicios;
+using CloudinaryDotNet;
+using CloudinaryDotNet.Actions;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace CalzadosMorales.Web.Controllers
 {
@@ -9,20 +16,33 @@ namespace CalzadosMorales.Web.Controllers
     public class ProductoController : Controller
     {
         private readonly ProductoService _productoService;
+        private readonly MaestroService _maestroService;
+        private readonly Cloudinary _cloudinary;
 
-        public ProductoController(ProductoService productoService)
+        public ProductoController(ProductoService productoService, MaestroService maestroService, Cloudinary cloudinary)
         {
             _productoService = productoService;
+            _maestroService = maestroService;
+            _cloudinary = cloudinary;
         }
 
-        // 1. LISTAR PRODUCTOS
+        private void CargarCombosYTallas()
+        {
+            var tallasMaestro = _maestroService.ObtenerTallas();
+            ViewBag.ListaCategorias = _maestroService.ObtenerCategorias();
+            ViewBag.ListaColores = _maestroService.ObtenerColores();
+            ViewBag.ListaMateriales = _maestroService.ObtenerMateriales();
+            ViewBag.ListaTallas = tallasMaestro;
+            ViewBag.ListaTallasTotal = tallasMaestro != null ? tallasMaestro.Where(t => t.Estado).ToList() : new List<Talla>();
+        }
+
         public IActionResult Index()
         {
             var lista = _productoService.ListarProductos();
+            CargarCombosYTallas();
             return View(lista);
         }
 
-        // OBTENER POR ID (Devuelve JSON para consultas rápidas o modales)
         [HttpGet]
         public IActionResult ObtenerPorId(int id)
         {
@@ -30,90 +50,121 @@ namespace CalzadosMorales.Web.Controllers
             return Json(producto);
         }
 
-        // 2. REGISTRAR - Vista GET
-        [HttpGet]
-        public IActionResult Registrar()
-        {
-            return View();
-        }
-
-        // 2. REGISTRAR - Acción POST (Incluyendo datos, tallas/stock e imagen)
         [HttpPost]
-        public IActionResult Registrar(Producto producto, List<ProductoTalla> listaTallasStock, string imagenUrl)
+        public async Task<IActionResult> Registrar(Producto producto, List<ProductoTalla> listaTallasStock, List<IFormFile> archivosImágenes, IFormCollection form)
         {
-            if (ModelState.IsValid)
+            ModelState.Remove("ListaTallasStock");
+            ModelState.Remove("CategoriaNombre");
+            ModelState.Remove("ColorNombre");
+            ModelState.Remove("MaterialTipo");
+            ModelState.Remove("Talla");
+
+            // 1. Registrar producto básico y obtener el ID generado
+            int idGenerado = _productoService.RegistrarProducto(producto);
+
+            if (idGenerado > 0)
             {
-                // Paso A: Registramos el producto principal y obtenemos el ID nuevo devuelto por el SP
-                int idGenerado = _productoService.RegistrarProducto(producto);
-
-                if (idGenerado > 0)
-                {
-                    // Paso B: Guardar las tallas y stocks seleccionados en producto_talla
-                    if (listaTallasStock != null)
-                    {
-                        foreach (var item in listaTallasStock)
-                        {
-                            if (item.Stock > 0)
-                            {
-                                _productoService.GuardarProductoTallaStock(idGenerado, item.IdTalla, item.Stock);
-                            }
-                        }
-                    }
-
-                    // Paso C: Guardar la imagen en producto_imagen si se ingresó URL
-                    if (!string.IsNullOrEmpty(imagenUrl))
-                    {
-                        _productoService.RegistrarImagen(idGenerado, imagenUrl);
-                    }
-
-                    return RedirectToAction("Index");
-                }
-            }
-            return View(producto);
-        }
-
-        // 3. ACTUALIZAR - Vista GET
-        [HttpGet]
-        public IActionResult Actualizar(int id)
-        {
-            var producto = _productoService.ObtenerProductoPorId(id);
-            if (producto == null)
-            {
-                return RedirectToAction("Index");
-            }
-            return View(producto);
-        }
-
-        // 3. ACTUALIZAR - Acción POST
-        [HttpPost]
-        public IActionResult Actualizar(Producto producto, List<ProductoTalla> listaTallasStock, string nuevaImagenUrl)
-        {
-            if (ModelState.IsValid)
-            {
-                // Actualiza los datos generales del producto
-                _productoService.ActualizarProducto(producto);
-
-                // Actualiza o reasigna las tallas y stock
-                if (listaTallasStock != null)
+                // 2. Procesamiento limpio de la lista de tallas y stock
+                if (listaTallasStock != null && listaTallasStock.Count > 0)
                 {
                     foreach (var item in listaTallasStock)
                     {
-                        _productoService.GuardarProductoTallaStock(producto.IdProducto, item.IdTalla, item.Stock);
+                        if (item.Stock >= 0)
+                        {
+                            _productoService.GuardarProductoTallaStock(idGenerado, item.IdTalla, item.Stock);
+                        }
                     }
                 }
 
-                // Agrega nueva imagen si se especificó una
-                if (!string.IsNullOrEmpty(nuevaImagenUrl))
+                // 3. Subida de imágenes a Cloudinary
+                if (archivosImágenes != null && archivosImágenes.Count > 0)
                 {
-                    _productoService.RegistrarImagen(producto.IdProducto, nuevaImagenUrl);
+                    foreach (var archivo in archivosImágenes)
+                    {
+                        if (archivo != null && archivo.Length > 0)
+                        {
+                            using (var stream = archivo.OpenReadStream())
+                            {
+                                var uploadParams = new ImageUploadParams()
+                                {
+                                    File = new FileDescription(archivo.FileName, stream),
+                                    Folder = "calzados_morales/productos"
+                                };
+                                var uploadResult = await _cloudinary.UploadAsync(uploadParams);
+                                if (uploadResult.StatusCode == System.Net.HttpStatusCode.OK)
+                                {
+                                    _productoService.RegistrarImagen(idGenerado, uploadResult.SecureUrl.ToString());
+                                }
+                            }
+                        }
+                    }
                 }
 
                 return RedirectToAction("Index");
             }
-            return View(producto);
+
+            CargarCombosYTallas();
+            return View("Index", _productoService.ListarProductos());
         }
 
-        // 4. CAMBIAR ESTADO (Activo / Inactivo)
+        [HttpPost]
+        public async Task<IActionResult> Actualizar(Producto producto, List<ProductoTalla> listaTallasStock, List<IFormFile> nuevasImágenes, IFormCollection form)
+        {
+            ModelState.Remove("ListaTallasStock");
+            ModelState.Remove("CategoriaNombre");
+            ModelState.Remove("ColorNombre");
+            ModelState.Remove("MaterialTipo");
+            ModelState.Remove("Talla");
+
+            // Validación estricta para evitar el error de llave foránea si el ID viene vacío o en 0
+            if (producto == null || producto.IdProducto <= 0)
+            {
+                return RedirectToAction("Index");
+            }
+
+            // 1. Actualizar datos principales del producto
+            _productoService.ActualizarProducto(producto);
+
+            // 1.1 Limpiar las tallas anteriores para evitar conflictos o duplicados
+            _productoService.LimpiarTallasProducto(producto.IdProducto);
+
+            // 2. Actualizar stock por tallas (Asignando explícitamente el IdProducto a cada item)
+            if (listaTallasStock != null && listaTallasStock.Count > 0)
+            {
+                foreach (var item in listaTallasStock)
+                {
+                    item.IdProducto = producto.IdProducto;
+                    _productoService.GuardarProductoTallaStock(producto.IdProducto, item.IdTalla, item.Stock);
+                }
+            }
+
+            // 3. Subida de nuevas imágenes si se seleccionaron
+            if (nuevasImágenes != null && nuevasImágenes.Count > 0)
+            {
+                foreach (var archivo in nuevasImágenes)
+                {
+                    if (archivo != null && archivo.Length > 0)
+                    {
+                        using (var stream = archivo.OpenReadStream())
+                        {
+                            var uploadParams = new ImageUploadParams()
+                            {
+                                File = new FileDescription(archivo.FileName, stream),
+                                Folder = "calzados_morales/productos"
+                            };
+                            var uploadResult = await _cloudinary.UploadAsync(uploadParams);
+                            if (uploadResult.StatusCode == System.Net.HttpStatusCode.OK)
+                            {
+                                _productoService.RegistrarImagen(producto.IdProducto, uploadResult.SecureUrl.ToString());
+                            }
+                        }
+                    }
+                }
+            }
+
+            return RedirectToAction("Index");
+        }
+
         [HttpPost]
         public IActionResult CambiarEstado(int idProducto, bool estado)
         {

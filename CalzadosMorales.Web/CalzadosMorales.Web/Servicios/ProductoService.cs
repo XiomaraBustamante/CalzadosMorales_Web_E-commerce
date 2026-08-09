@@ -46,5 +46,12 @@ namespace CalzadosMorales.Web.Servicios
         {
             _productoRepository.RegistrarImagen(idProducto, imagenUrl);
         }
+
+
+        public void LimpiarTallasProducto(int idProducto)
+        {
+            _productoRepository.LimpiarTallasProducto(idProducto);
+        }
+
     }
 }
