@@ -82,13 +82,9 @@
                                                 <button class="btn btn-sm btn-outline-primary me-1" onclick="abrirEditarNatural(@item.IdCliente)" title="Editar">
                                                     <i class="fas fa-edit"></i>
                                                 </button>
-                                                <form asp-action="CambiarEstadoNatural" method="post" class="d-inline">
-                                                    <input type="hidden" name="idCliente" value="@item.IdCliente" />
-                                                    <input type="hidden" name="estado" value="@(item.Cliente != null && item.Cliente.Estado ? "false" : "true")" />
-                                                    <button type="submit" class="btn btn-sm @(item.Cliente != null && item.Cliente.Estado ? "btn-outline-danger" : "btn-outline-success")" title="Cambiar Estado">
-                                                        <i class="fas @(item.Cliente != null && item.Cliente.Estado ? "fa-ban" : "fa-check")"></i>
-                                                    </button>
-                                                </form>
+                                                <button type="button" class="btn btn-sm @(item.Cliente != null && item.Cliente.Estado ? "btn-outline-danger" : "btn-outline-success")" onclick="cambiarEstadoNatural(@item.IdCliente, @(item.Cliente != null && item.Cliente.Estado ? "false" : "true"))" title="Cambiar Estado">
+                                                    <i class="fas @(item.Cliente != null && item.Cliente.Estado ? "fa-ban" : "fa-check")"></i>
+                                                </button>
                                             </td>
                                         </tr>
                                     }
@@ -146,13 +142,9 @@
                                                 <button class="btn btn-sm btn-outline-primary me-1" onclick="abrirEditarJuridica(@item.IdCliente)" title="Editar">
                                                     <i class="fas fa-edit"></i>
                                                 </button>
-                                                <form asp-action="CambiarEstadoJuridica" method="post" class="d-inline">
-                                                    <input type="hidden" name="idCliente" value="@item.IdCliente" />
-                                                    <input type="hidden" name="estado" value="@(item.Cliente != null && item.Cliente.Estado ? "false" : "true")" />
-                                                    <button type="submit" class="btn btn-sm @(item.Cliente != null && item.Cliente.Estado ? "btn-outline-danger" : "btn-outline-success")" title="Cambiar Estado">
-                                                        <i class="fas @(item.Cliente != null && item.Cliente.Estado ? "fa-ban" : "fa-check")"></i>
-                                                    </button>
-                                                </form>
+                                                <button type="button" class="btn btn-sm @(item.Cliente != null && item.Cliente.Estado ? "btn-outline-danger" : "btn-outline-success")" onclick="cambiarEstadoJuridica(@item.IdCliente, @(item.Cliente != null && item.Cliente.Estado ? "false" : "true"))" title="Cambiar Estado">
+                                                    <i class="fas @(item.Cliente != null && item.Cliente.Estado ? "fa-ban" : "fa-check")"></i>
+                                                </button>
                                             </td>
                                         </tr>
                                     }
@@ -172,7 +164,7 @@
 <div class="modal fade" id="modalNatural" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content border-0 shadow">
-            <form id="formNatural" asp-action="RegistrarNatural" method="post">
+            <form id="formNatural" method="post">
                 <div class="modal-header bg-primary text-white">
                     <h5 class="modal-title fw-bold" id="tituloModalNatural">Registrar Persona Natural</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -234,7 +226,7 @@
 <div class="modal fade" id="modalJuridica" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content border-0 shadow">
-            <form id="formJuridica" asp-action="RegistrarJuridica" method="post">
+            <form id="formJuridica" method="post">
                 <div class="modal-header bg-dark text-white">
                     <h5 class="modal-title fw-bold" id="tituloModalJuridica">Registrar Persona Jurídica</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -281,17 +273,107 @@
 </div>
 
 @section Scripts {
+    <!-- SweetAlert2 CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <script>
-        // Restricción estricta de solo números en los inputs de teléfono
-        document.addEventListener("DOMContentLoaded", function () {
+        document.addEventListener("DOMContentLoaded", function() {
+            // Restricción estricta de solo números en los inputs de teléfono y documentos
             const inputsTelefono = document.querySelectorAll('input[type="tel"]');
             inputsTelefono.forEach(input => {
-                input.addEventListener("input", function () {
+                input.addEventListener("input", function() {
                     this.value = this.value.replace(/[^0-9]/g, '');
                 });
             });
+
+            const inputDni = document.getElementById('natDni');
+            if (inputDni) {
+                inputDni.addEventListener("input", function() {
+                    this.value = this.value.replace(/[^0-9]/g, '');
+                });
+            }
+
+            const inputRuc = document.getElementById('jurRuc');
+            if (inputRuc) {
+                inputRuc.addEventListener("input", function() {
+                    this.value = this.value.replace(/[^0-9]/g, '');
+                });
+            }
+
+            // Interceptar formulario Persona Natural (AJAX)
+            const formNatural = document.getElementById("formNatural");
+            formNatural.addEventListener("submit", function(e) {
+                e.preventDefault();
+                const url = this.action;
+                const formData = new FormData(this);
+
+                fetch(url, {
+                    method: 'POST',
+                    body: formData
+                })
+                    .then(response => response.json())
+                    .then(result => {
+                        if (result.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: '¡Éxito!',
+                                text: result.message,
+                                confirmButtonText: 'Aceptar'
+                            }).then(() => {
+                                location.reload();
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Atención',
+                                text: result.message,
+                                confirmButtonText: 'Entendido'
+                            });
+                        }
+                    })
+                    .catch(() => {
+                        Swal.fire('Error', 'Ocurrió un error inesperado en la red.', 'error');
+                    });
+            });
+
+            // Interceptar formulario Persona Jurídica (AJAX)
+            const formJuridica = document.getElementById("formJuridica");
+            formJuridica.addEventListener("submit", function(e) {
+                e.preventDefault();
+                const url = this.action;
+                const formData = new FormData(this);
+
+                fetch(url, {
+                    method: 'POST',
+                    body: formData
+                })
+                    .then(response => response.json())
+                    .then(result => {
+                        if (result.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: '¡Éxito!',
+                                text: result.message,
+                                confirmButtonText: 'Aceptar'
+                            }).then(() => {
+                                location.reload();
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Atención',
+                                text: result.message,
+                                confirmButtonText: 'Entendido'
+                            });
+                        }
+                    })
+                    .catch(() => {
+                        Swal.fire('Error', 'Ocurrió un error inesperado en la red.', 'error');
+                    });
+            });
         });
 
+        // Funciones para Persona Natural
         function prepararRegistroNatural() {
             document.getElementById("formNatural").action = "/Cliente/RegistrarNatural";
             document.getElementById("tituloModalNatural").innerText = "Registrar Persona Natural";
@@ -302,7 +384,12 @@
         function abrirEditarNatural(id) {
             fetch('/Cliente/ObtenerNaturalPorId?id=' + id)
                 .then(response => response.json())
-                .then(data => {
+                .then(res => {
+                    if (!res.success) {
+                        Swal.fire('Error', res.message, 'error');
+                        return;
+                    }
+                    const data = res.data;
                     document.getElementById("formNatural").action = "/Cliente/ActualizarNatural";
                     document.getElementById("tituloModalNatural").innerText = "Actualizar Persona Natural";
 
@@ -319,9 +406,42 @@
                     var myModal = new bootstrap.Modal(document.getElementById('modalNatural'));
                     myModal.show();
                 })
-                .catch(error => console.error('Error al obtener datos:', error));
+                .catch(() => Swal.fire('Error', 'No se pudieron cargar los datos del cliente.', 'error'));
         }
 
+        function cambiarEstadoNatural(idCliente, nuevoEstado) {
+            Swal.fire({
+                title: '¿Estás seguro?',
+                text: "Se cambiará el estado de este cliente.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Sí, cambiar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const formData = new FormData();
+                    formData.append('idCliente', idCliente);
+                    formData.append('estado', nuevoEstado);
+
+                    fetch('/Cliente/CambiarEstadoNatural', {
+                        method: 'POST',
+                        body: formData
+                    })
+                        .then(response => response.json())
+                        .then(res => {
+                            if (res.success) {
+                                Swal.fire('¡Actualizado!', res.message, 'success').then(() => location.reload());
+                            } else {
+                                Swal.fire('Error', res.message, 'error');
+                            }
+                        });
+                }
+            });
+        }
+
+        // Funciones para Persona Jurídica
         function prepararRegistroJuridica() {
             document.getElementById("formJuridica").action = "/Cliente/RegistrarJuridica";
             document.getElementById("tituloModalJuridica").innerText = "Registrar Persona Jurídica";
@@ -332,7 +452,12 @@
         function abrirEditarJuridica(id) {
             fetch('/Cliente/ObtenerJuridicaPorId?id=' + id)
                 .then(response => response.json())
-                .then(data => {
+                .then(res => {
+                    if (!res.success) {
+                        Swal.fire('Error', res.message, 'error');
+                        return;
+                    }
+                    const data = res.data;
                     document.getElementById("formJuridica").action = "/Cliente/ActualizarJuridica";
                     document.getElementById("tituloModalJuridica").innerText = "Actualizar Persona Jurídica";
 
@@ -348,7 +473,39 @@
                     var myModal = new bootstrap.Modal(document.getElementById('modalJuridica'));
                     myModal.show();
                 })
-                .catch(error => console.error('Error al obtener datos:', error));
+                .catch(() => Swal.fire('Error', 'No se pudieron cargar los datos de la empresa.', 'error'));
+        }
+
+        function cambiarEstadoJuridica(idCliente, nuevoEstado) {
+            Swal.fire({
+                title: '¿Estás seguro?',
+                text: "Se cambiará el estado de esta empresa.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Sí, cambiar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const formData = new FormData();
+                    formData.append('idCliente', idCliente);
+                    formData.append('estado', nuevoEstado);
+
+                    fetch('/Cliente/CambiarEstadoJuridica', {
+                        method: 'POST',
+                        body: formData
+                    })
+                        .then(response => response.json())
+                        .then(res => {
+                            if (res.success) {
+                                Swal.fire('¡Actualizado!', res.message, 'success').then(() => location.reload());
+                            } else {
+                                Swal.fire('Error', res.message, 'error');
+                            }
+                        });
+                }
+            });
         }
     </script>
 }

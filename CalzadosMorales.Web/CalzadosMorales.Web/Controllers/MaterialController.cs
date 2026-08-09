@@ -16,36 +16,75 @@ namespace CalzadosMorales.Web.Controllers
 
         public IActionResult Index()
         {
-            var lista = _maestroService.ObtenerMateriales();
-            return View(lista);
+            try
+            {
+                var lista = _maestroService.ObtenerMateriales();
+                return View(lista);
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = ex.Message;
+                return View(new List<Models.Material>());
+            }
         }
 
         [HttpGet]
         public IActionResult ObtenerPorId(int id)
         {
-            var material = _maestroService.ObtenerMaterialPorId(id);
-            return Json(material);
+            try
+            {
+                var material = _maestroService.ObtenerMaterialPorId(id);
+                if (material == null)
+                    return Json(new { success = false, message = "Material no encontrado." });
+
+                return Json(new { success = true, data = material });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
         }
 
         [HttpPost]
         public IActionResult Registrar(string tipo)
         {
-            _maestroService.GuardarMaterial(tipo);
-            return RedirectToAction("Index");
+            try
+            {
+                _maestroService.GuardarMaterial(tipo);
+                return Json(new { success = true, message = "¡Material registrado con éxito!" });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
         }
 
         [HttpPost]
         public IActionResult Actualizar(int id, string tipo)
         {
-            _maestroService.ActualizarMaterial(id, tipo);
-            return RedirectToAction("Index");
+            try
+            {
+                _maestroService.ActualizarMaterial(id, tipo);
+                return Json(new { success = true, message = "¡Material actualizado con éxito!" });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
         }
 
         [HttpPost]
         public IActionResult CambiarEstado(int id, bool estado)
         {
-            _maestroService.CambiarEstadoMaterial(id, estado);
-            return RedirectToAction("Index");
+            try
+            {
+                _maestroService.CambiarEstadoMaterial(id, estado);
+                return Json(new { success = true, message = "¡Estado cambiado con éxito!" });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
         }
     }
 }

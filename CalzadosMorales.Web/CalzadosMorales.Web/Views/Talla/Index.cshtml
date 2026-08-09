@@ -84,7 +84,7 @@
                                             <i class="fas fa-pen"></i>
                                         </button>
 
-                                        <form asp-action="CambiarEstado" asp-controller="Talla" method="post" class="d-inline">
+                                        <form asp-action="CambiarEstado" asp-controller="Talla" method="post" class="d-inline form-cambiar-estado">
                                             <input type="hidden" name="id" value="@item.IdTalla" />
                                             <input type="hidden" name="estado" value="false" />
                                             <button type="submit" class="btn btn-sm shadow-sm" style="background-color: #ffe4e6; color: #f43f5e;" title="Desactivar">
@@ -94,7 +94,7 @@
                                     }
                                     else
                                     {
-                                        <form asp-action="CambiarEstado" asp-controller="Talla" method="post" class="d-inline">
+                                        <form asp-action="CambiarEstado" asp-controller="Talla" method="post" class="d-inline form-cambiar-estado">
                                             <input type="hidden" name="id" value="@item.IdTalla" />
                                             <input type="hidden" name="estado" value="true" />
                                             <button type="submit" class="btn btn-sm shadow-sm" style="background-color: #d1fae5; color: #059669;" title="Activar">
@@ -172,6 +172,9 @@
 </div>
 
 @section Scripts {
+    <!-- CDN de SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <script>
         // Filtrar registros en tiempo real con el buscador superior
         document.getElementById('buscadorTabla').addEventListener('keyup', function() {
@@ -215,19 +218,105 @@
             document.querySelector('.needs-validation').classList.remove('was-validated');
         }
 
-        // Validación de Bootstrap para formularios
-        (function() {
-            'use strict'
-            var forms = document.querySelectorAll('.needs-validation')
-            Array.prototype.slice.call(forms).forEach(function(form) {
-                form.addEventListener('submit', function(event) {
-                    if (!form.checkValidity()) {
-                        event.preventDefault()
-                        event.stopPropagation()
-                    }
-                    form.classList.add('was-validated')
-                }, false)
+        // Enviar formulario (Registrar / Actualizar) mediante AJAX con SweetAlert2
+        document.getElementById('formTalla').addEventListener('submit', function(event) {
+            event.preventDefault();
+            var form = this;
+
+            if (!form.checkValidity()) {
+                event.stopPropagation();
+                form.classList.add('was-validated');
+                return;
+            }
+
+            var urlAccion = form.action;
+            var formData = new FormData(form);
+
+            fetch(urlAccion, {
+                method: 'POST',
+                body: formData
             })
-        })();
+                .then(response => response.json())
+                .then(resultado => {
+                    if (resultado.success) {
+                        var modalElement = document.getElementById('modalTalla');
+                        var modal = bootstrap.Modal.getInstance(modalElement);
+                        if (modal) {
+                            modal.hide();
+                        }
+
+                        Swal.fire({
+                            icon: 'success',
+                            title: '¡Éxito!',
+                            text: resultado.message,
+                            confirmButtonColor: '#8b5cf6'
+                        }).then(() => {
+                            location.reload();
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Oops...',
+                            text: resultado.message,
+                            confirmButtonColor: '#d33'
+                        });
+                    }
+                })
+                .catch(error => {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error de red',
+                        text: 'Ocurrió un error inesperado al procesar la solicitud.',
+                        confirmButtonColor: '#d33'
+                    });
+                });
+        });
+
+        // Cambiar Estado (Activar / Desactivar) con confirmación de SweetAlert2
+        document.querySelectorAll('.form-cambiar-estado').forEach(function(formCambioEstado) {
+            formCambioEstado.addEventListener('submit', function(e) {
+                e.preventDefault();
+                var form = this;
+
+                Swal.fire({
+                    title: '¿Estás seguro?',
+                    text: "¿Deseas cambiar el estado de esta talla?",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#8b5cf6',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Sí, cambiar',
+                    cancelButtonText: 'Cancelar'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        var formData = new FormData(form);
+                        fetch('/Talla/CambiarEstado', {
+                            method: 'POST',
+                            body: formData
+                        })
+                            .then(response => response.json())
+                            .then(resultado => {
+                                if (resultado.success) {
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: '¡Actualizado!',
+                                        text: resultado.message,
+                                        confirmButtonColor: '#8b5cf6'
+                                    }).then(() => {
+                                        location.reload();
+                                    });
+                                } else {
+                                    Swal.fire({
+                                        icon: 'error',
+                                        title: 'Error',
+                                        text: resultado.message,
+                                        confirmButtonColor: '#d33'
+                                    });
+                                }
+                            });
+                    }
+                });
+            });
+        });
     </script>
 }
