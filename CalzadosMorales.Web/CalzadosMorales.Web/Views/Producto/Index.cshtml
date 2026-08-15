@@ -11,7 +11,7 @@
                 <i class="mdi mdi-shopping"></i>
             </span> Inventario de Productos
         </h3>
-        <button type="button" class="btn btn-gradient-primary btn-icon-text shadow-sm" data-bs-toggle="modal" data-bs-target="#modalProducto" onclick="abrirModalRegistrar()">
+        <button type="button" class="btn btn-gradient-primary btn-icon-text shadow-sm" onclick="abrirModalRegistrar()">
             <i class="mdi mdi-plus btn-icon-prepend"></i> Nuevo Producto
         </button>
     </div>
@@ -174,27 +174,30 @@
                     <div class="card border-0 shadow-sm mb-3 rounded-3">
                         <div class="card-body">
                             <h6 class="text-primary font-weight-bold mb-1">
-                                <i class="mdi mdi-image-multiple"></i> Subida del Carrusel Móvil (3 Fotos Obligatorias)
+                                <i class="mdi mdi-image-multiple"></i> Subida del Carrusel Móvil (3 Fotos)
                             </h6>
-                            <p class="text-dark small mb-3">Fotos necesarias para la visualización en la aplicación móvil.</p>
+                            <p class="text-dark small mb-3">Si edita, puede dejar los campos en blanco para conservar las imágenes actuales.</p>
 
                             <div class="row g-3">
                                 <div class="col-md-4">
                                     <div class="p-3 border rounded bg-white shadow-sm text-center h-100 d-flex flex-column justify-content-between">
                                         <span class="small font-weight-bold text-dark mb-2">Foto 1 (Principal Catálogo)</span>
-                                        <input type="file" name="archivosImágenes" class="form-control form-control-sm" accept="image/*" />
+                                        <div id="contenedor-imagen-0" class="mb-2"></div>
+                                        <input type="file" name="nuevasImágenes" class="form-control form-control-sm" accept="image/*" />
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="p-3 border rounded bg-white shadow-sm text-center h-100 d-flex flex-column justify-content-between">
                                         <span class="small font-weight-bold text-dark mb-2">Foto 2 (Modelo)</span>
-                                        <input type="file" name="archivosImágenes" class="form-control form-control-sm" accept="image/*" />
+                                        <div id="contenedor-imagen-1" class="mb-2"></div>
+                                        <input type="file" name="nuevasImágenes" class="form-control form-control-sm" accept="image/*" />
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="p-3 border rounded bg-white shadow-sm text-center h-100 d-flex flex-column justify-content-between">
                                         <span class="small font-weight-bold text-dark mb-2">Foto 3 (Ángulo Detalle/Suela)</span>
-                                        <input type="file" name="archivosImágenes" class="form-control form-control-sm" accept="image/*" />
+                                        <div id="contenedor-imagen-2" class="mb-2"></div>
+                                        <input type="file" name="nuevasImágenes" class="form-control form-control-sm" accept="image/*" />
                                     </div>
                                 </div>
                             </div>
@@ -245,23 +248,34 @@
 
 @section Scripts {
     <script>
-        function abrirModalRegistrar() {
-            $("#tituloModal").html('<i class="mdi mdi-plus-box-outline me-1"></i> Nuevo Producto');
-            $("#formProducto").attr("action", "/Producto/Registrar");
+        function limpiarModal() {
             $("#formProducto")[0].reset();
             $("#IdProducto").val(0);
             $(".stock-input").val(0);
+            for (let i = 0; i < 3; i++) {
+                $(`#contenedor-imagen-${i}`).html('');
+            }
+        }
+
+        function abrirModalRegistrar() {
+            $("#tituloModal").html('<i class="mdi mdi-plus-box-outline me-1"></i> Nuevo Producto');
+            $("#formProducto").attr("action", "/Producto/Registrar");
+            limpiarModal();
             $("#modalProducto").modal("show");
         }
 
         function abrirModalEditar(id) {
             $("#tituloModal").html('<i class="mdi mdi-pencil-box-outline me-1"></i> Editar Producto');
             $("#formProducto").attr("action", "/Producto/Actualizar");
-            $("#formProducto")[0].reset();
-            $(".stock-input").val(0);
+            limpiarModal();
 
-            $.get("/Producto/ObtenerPorId?id=" + id, function(data) {
-                if (data) {
+            $.get("/Producto/ObtenerPorId?id=" + id, function(response) {
+                if (response) {
+                    let data = response.producto || response;
+                    let tallasStock = response.listaTallasStock || data.listaTallasStock || data.ListaTallasStock;
+                    let imagenes = response.imagenes || data.imagenes || [];
+
+                    // Setear campos generales
                     $("#IdProducto").val(data.idProducto || data.IdProducto);
                     $("#Nombre").val(data.nombre || data.Nombre);
                     $("#Precio").val(data.precio || data.Precio);
@@ -270,16 +284,31 @@
                     $("#IdMaterial").val(data.idMaterial || data.IdMaterial);
                     $("#Descripcion").val(data.descripcion || data.Descripcion);
 
-                    let tallasStock = data.listaTallasStock || data.ListaTallasStock;
+                    // Cargar Tallas y Stock
                     if (tallasStock && tallasStock.length > 0) {
                         $.each(tallasStock, function(index, item) {
                             let idTallaVal = item.idTalla || item.IdTalla;
                             let stockVal = item.stock !== undefined ? item.stock : item.Stock;
-
-                            // Buscar el input de stock utilizando el atributo personalizado data-idtalla
                             let inputStock = $('.stock-input[data-idtalla="' + idTallaVal + '"]');
                             if (inputStock.length > 0) {
                                 inputStock.val(stockVal);
+                            }
+                        });
+                    }
+
+                    // Cargar imágenes actuales en sus slots correspondientes (0, 1, 2) usando la propiedad 'orden'
+                    if (imagenes && imagenes.length > 0) {
+                        $.each(imagenes, function(index, img) {
+                            let urlImg = img.imagenUrl || img.ImagenUrl || img.urlImagen || img.UrlImagen;
+                            // Mapea basándose en la propiedad 'orden' de la BD (ej. orden 1 -> slot 0), o usa el índice por defecto
+                            let slotIndex = (img.orden !== undefined && img.orden > 0) ? img.orden - 1 : index;
+
+                            if (slotIndex < 3 && urlImg) {
+                                let htmlImg = `
+                                            <img src="${urlImg}" class="rounded shadow-sm mb-1" style="width: 60px; height: 60px; object-fit: cover;" />
+                                            <div><span class="badge bg-success text-white" style="font-size: 10px;">Slot ${slotIndex + 1} Actual</span></div>
+                                        `;
+                                $(`#contenedor-imagen-${slotIndex}`).html(htmlImg);
                             }
                         });
                     }

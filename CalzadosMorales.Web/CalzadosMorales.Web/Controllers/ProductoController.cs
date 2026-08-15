@@ -47,11 +47,19 @@ namespace CalzadosMorales.Web.Controllers
         public IActionResult ObtenerPorId(int id)
         {
             var producto = _productoService.ObtenerProductoPorId(id);
-            return Json(producto);
+            var imagenes = _productoService.ListarImagenesPorProducto(id);
+
+            // Retornamos un objeto estructurado que incluye el producto y sus imágenes asociadas
+            return Json(new
+            {
+                producto = producto,
+                listaTallasStock = producto?.ListaTallasStock,
+                imagenes = imagenes
+            });
         }
 
         [HttpPost]
-        public async Task<IActionResult> Registrar(Producto producto, List<ProductoTalla> listaTallasStock, List<IFormFile> archivosImágenes, IFormCollection form)
+        public async Task<IActionResult> Registrar(Producto producto, List<ProductoTalla> listaTallasStock, List<IFormFile> nuevasImágenes, IFormCollection form)
         {
             ModelState.Remove("ListaTallasStock");
             ModelState.Remove("CategoriaNombre");
@@ -76,11 +84,12 @@ namespace CalzadosMorales.Web.Controllers
                     }
                 }
 
-                // 3. Subida de imágenes a Cloudinary
-                if (archivosImágenes != null && archivosImágenes.Count > 0)
+                // 3. Subida de imágenes a Cloudinary (Actualizado pasando el orden: i + 1)
+                if (nuevasImágenes != null && nuevasImágenes.Count > 0)
                 {
-                    foreach (var archivo in archivosImágenes)
+                    for (int i = 0; i < nuevasImágenes.Count; i++)
                     {
+                        var archivo = nuevasImágenes[i];
                         if (archivo != null && archivo.Length > 0)
                         {
                             using (var stream = archivo.OpenReadStream())
@@ -93,7 +102,8 @@ namespace CalzadosMorales.Web.Controllers
                                 var uploadResult = await _cloudinary.UploadAsync(uploadParams);
                                 if (uploadResult.StatusCode == System.Net.HttpStatusCode.OK)
                                 {
-                                    _productoService.RegistrarImagen(idGenerado, uploadResult.SecureUrl.ToString());
+                                    int orden = i + 1; // Asignamos el orden secuencial
+                                    _productoService.RegistrarImagen(idGenerado, uploadResult.SecureUrl.ToString(), orden);
                                 }
                             }
                         }
@@ -138,11 +148,15 @@ namespace CalzadosMorales.Web.Controllers
                 }
             }
 
-            // 3. Subida de nuevas imágenes si se seleccionaron
+            // 3. Procesamiento inteligente de imágenes (Reemplazo o registro con su orden respectivo)
+            var imagenesActuales = _productoService.ListarImagenesPorProducto(producto.IdProducto);
+
             if (nuevasImágenes != null && nuevasImágenes.Count > 0)
             {
-                foreach (var archivo in nuevasImágenes)
+                for (int i = 0; i < nuevasImágenes.Count; i++)
                 {
+                    var archivo = nuevasImágenes[i];
+
                     if (archivo != null && archivo.Length > 0)
                     {
                         using (var stream = archivo.OpenReadStream())
@@ -153,9 +167,25 @@ namespace CalzadosMorales.Web.Controllers
                                 Folder = "calzados_morales/productos"
                             };
                             var uploadResult = await _cloudinary.UploadAsync(uploadParams);
+
                             if (uploadResult.StatusCode == System.Net.HttpStatusCode.OK)
                             {
-                                _productoService.RegistrarImagen(producto.IdProducto, uploadResult.SecureUrl.ToString());
+                                string nuevaUrl = uploadResult.SecureUrl.ToString();
+                                int orden = i + 1;
+
+                                // Si ya existe una imagen registrada en esta posición, la actualizamos
+                                if (i < imagenesActuales.Count)
+                                {
+                                    int idImagenExistente = imagenesActuales[i].IdImagen;
+                                    _productoService.ActualizarImagen(idImagenExistente, nuevaUrl);
+                                    // Nota: Si también necesitas actualizar el orden de la imagen existente aquí, 
+                                    // puedes asegurarte de que tu método de actualizar imagen o un método específico maneje el orden si cambia.
+                                }
+                                else
+                                {
+                                    // Si no existe, es una foto nueva adicional y la registramos enviando su orden
+                                    _productoService.RegistrarImagen(producto.IdProducto, nuevaUrl, orden);
+                                }
                             }
                         }
                     }

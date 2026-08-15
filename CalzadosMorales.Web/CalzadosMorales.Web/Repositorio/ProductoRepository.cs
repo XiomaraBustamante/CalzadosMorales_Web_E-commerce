@@ -13,7 +13,7 @@ namespace CalzadosMorales.Web.Repositorio
             _cadenaConexion = configuration.GetConnectionString("CadenaSQL");
         }
 
-        // Obtener producto por ID
+        // Obtener producto por ID (con tallas y ahora también con imágenes)
         public Producto ObtenerProductoPorId(int idProducto)
         {
             Producto producto = null;
@@ -45,9 +45,9 @@ namespace CalzadosMorales.Web.Repositorio
                     }
                 }
 
-                // 2. Obtener las tallas y stocks asociados
                 if (producto != null)
                 {
+                    // 2. Obtener las tallas y stocks asociados
                     using (var cmdTallas = new SqlCommand("sp_ListarTallasPorProducto", conexion))
                     {
                         cmdTallas.CommandType = CommandType.StoredProcedure;
@@ -65,6 +65,9 @@ namespace CalzadosMorales.Web.Repositorio
                             }
                         }
                     }
+
+                    // 3. Obtener las imágenes asociadas para el formulario de edición
+                    producto.ListaImagenes = ListarImagenesPorProducto(idProducto);
                 }
             }
             return producto;
@@ -194,8 +197,8 @@ namespace CalzadosMorales.Web.Repositorio
             }
         }
 
-        // Registrar imagen asociada
-        public void RegistrarImagen(int idProducto, string imagenUrl)
+        // Registrar imagen asociada (Actualizado con el parámetro @orden)
+        public void RegistrarImagen(int idProducto, string imagenUrl, int orden)
         {
             using (var conexion = new SqlConnection(_cadenaConexion))
             {
@@ -205,22 +208,69 @@ namespace CalzadosMorales.Web.Repositorio
                     cmd.CommandType = CommandType.StoredProcedure;
                     cmd.Parameters.AddWithValue("@id_producto", idProducto);
                     cmd.Parameters.AddWithValue("@imagen_url", imagenUrl);
+                    cmd.Parameters.AddWithValue("@orden", orden);
                     cmd.ExecuteNonQuery();
                 }
             }
         }
 
+        // --- NUEVOS MÉTODOS DE IMÁGENES ---
+
+        // Listar imágenes por producto (para el modal de editar - Actualizado para mapear Orden)
+        public List<ProductoImagen> ListarImagenesPorProducto(int idProducto)
+        {
+            var lista = new List<ProductoImagen>();
+            using (var conexion = new SqlConnection(_cadenaConexion))
+            {
+                conexion.Open();
+                using (var cmd = new SqlCommand("sp_ListarImagenesPorProducto", conexion))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@id_producto", idProducto);
+                    using (var dr = cmd.ExecuteReader())
+                    {
+                        while (dr.Read())
+                        {
+                            lista.Add(new ProductoImagen
+                            {
+                                IdImagen = Convert.ToInt32(dr["id_imagen"]),
+                                IdProducto = Convert.ToInt32(dr["id_producto"]),
+                                ImagenUrl = dr["imagen_url"].ToString(),
+                                Orden = Convert.ToInt32(dr["orden"])
+                            });
+                        }
+                    }
+                }
+            }
+            return lista;
+        }
+
+        // Actualizar URL de una imagen existente (cuando reemplazan una foto)
+        public void ActualizarImagen(int idImagen, string imagenUrl)
+        {
+            using (var conexion = new SqlConnection(_cadenaConexion))
+            {
+                conexion.Open();
+                using (var cmd = new SqlCommand("sp_ActualizarProductoImagen", conexion))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@id_imagen", idImagen);
+                    cmd.Parameters.AddWithValue("@imagen_url", imagenUrl);
+                    cmd.ExecuteNonQuery();
+                }
+            }
+        }
+
+        // Limpiar tallas anteriores del producto
         public void LimpiarTallasProducto(int idProducto)
         {
             using (var conexion = new SqlConnection(_cadenaConexion))
             {
-                // Esta sentencia borra todas las tallas actuales de ese producto
                 var cmd = new SqlCommand("DELETE FROM producto_talla WHERE id_producto = @id", conexion);
                 cmd.Parameters.AddWithValue("@id", idProducto);
                 conexion.Open();
                 cmd.ExecuteNonQuery();
             }
         }
-
     }
 }

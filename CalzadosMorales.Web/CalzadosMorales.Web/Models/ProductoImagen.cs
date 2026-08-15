@@ -19,6 +19,11 @@ namespace CalzadosMorales.Web.Models
         [StringLength(500)]
         public string ImagenUrl { get; set; }
 
+        [Required]
+        [Column("orden")]
+        public int Orden { get; set; }
+
+
         [ForeignKey("IdProducto")]
         public virtual Producto Producto { get; set; }
     }

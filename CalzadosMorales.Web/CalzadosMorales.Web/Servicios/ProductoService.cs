@@ -42,16 +42,27 @@ namespace CalzadosMorales.Web.Servicios
             _productoRepository.GuardarProductoTallaStock(idProducto, idTalla, stock);
         }
 
-        public void RegistrarImagen(int idProducto, string imagenUrl)
+        // Actualizado para aceptar el parámetro 'orden'
+        public void RegistrarImagen(int idProducto, string imagenUrl, int orden)
         {
-            _productoRepository.RegistrarImagen(idProducto, imagenUrl);
+            _productoRepository.RegistrarImagen(idProducto, imagenUrl, orden);
         }
-
 
         public void LimpiarTallasProducto(int idProducto)
         {
             _productoRepository.LimpiarTallasProducto(idProducto);
         }
 
+        // --- Métodos de gestión de imágenes ---
+
+        public List<ProductoImagen> ListarImagenesPorProducto(int idProducto)
+        {
+            return _productoRepository.ListarImagenesPorProducto(idProducto);
+        }
+
+        public void ActualizarImagen(int idImagen, string imagenUrl)
+        {
+            _productoRepository.ActualizarImagen(idImagen, imagenUrl);
+        }
     }
 }
