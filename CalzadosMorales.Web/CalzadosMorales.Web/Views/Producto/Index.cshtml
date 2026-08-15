@@ -170,7 +170,7 @@
                         </div>
                     </div>
 
-                    <!-- SUBIDA DE IMÁGENES -->
+                    <!-- SUBIDA DE IMÁGENES (Actualizado con ImagenFormModel y sus Ordenes explícitos) -->
                     <div class="card border-0 shadow-sm mb-3 rounded-3">
                         <div class="card-body">
                             <h6 class="text-primary font-weight-bold mb-1">
@@ -183,21 +183,24 @@
                                     <div class="p-3 border rounded bg-white shadow-sm text-center h-100 d-flex flex-column justify-content-between">
                                         <span class="small font-weight-bold text-dark mb-2">Foto 1 (Principal Catálogo)</span>
                                         <div id="contenedor-imagen-0" class="mb-2"></div>
-                                        <input type="file" name="nuevasImágenes" class="form-control form-control-sm" accept="image/*" />
+                                        <input type="hidden" name="imagenesForm[0].Orden" value="1" />
+                                        <input type="file" name="imagenesForm[0].Archivo" class="form-control form-control-sm" accept="image/*" />
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="p-3 border rounded bg-white shadow-sm text-center h-100 d-flex flex-column justify-content-between">
                                         <span class="small font-weight-bold text-dark mb-2">Foto 2 (Modelo)</span>
                                         <div id="contenedor-imagen-1" class="mb-2"></div>
-                                        <input type="file" name="nuevasImágenes" class="form-control form-control-sm" accept="image/*" />
+                                        <input type="hidden" name="imagenesForm[1].Orden" value="2" />
+                                        <input type="file" name="imagenesForm[1].Archivo" class="form-control form-control-sm" accept="image/*" />
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="p-3 border rounded bg-white shadow-sm text-center h-100 d-flex flex-column justify-content-between">
                                         <span class="small font-weight-bold text-dark mb-2">Foto 3 (Ángulo Detalle/Suela)</span>
                                         <div id="contenedor-imagen-2" class="mb-2"></div>
-                                        <input type="file" name="nuevasImágenes" class="form-control form-control-sm" accept="image/*" />
+                                        <input type="hidden" name="imagenesForm[2].Orden" value="3" />
+                                        <input type="file" name="imagenesForm[2].Archivo" class="form-control form-control-sm" accept="image/*" />
                                     </div>
                                 </div>
                             </div>
@@ -300,14 +303,15 @@
                     if (imagenes && imagenes.length > 0) {
                         $.each(imagenes, function(index, img) {
                             let urlImg = img.imagenUrl || img.ImagenUrl || img.urlImagen || img.UrlImagen;
-                            // Mapea basándose en la propiedad 'orden' de la BD (ej. orden 1 -> slot 0), o usa el índice por defecto
-                            let slotIndex = (img.orden !== undefined && img.orden > 0) ? img.orden - 1 : index;
+                            // Mapea basándose en la propiedad 'orden' de la BD (ej. orden 1 -> slot 0)
+                            let ordenVal = img.orden !== undefined ? img.orden : (img.Orden !== undefined ? img.Orden : 0);
+                            let slotIndex = (ordenVal > 0) ? ordenVal - 1 : index;
 
                             if (slotIndex < 3 && urlImg) {
                                 let htmlImg = `
-                                            <img src="${urlImg}" class="rounded shadow-sm mb-1" style="width: 60px; height: 60px; object-fit: cover;" />
-                                            <div><span class="badge bg-success text-white" style="font-size: 10px;">Slot ${slotIndex + 1} Actual</span></div>
-                                        `;
+                                                    <img src="${urlImg}" class="rounded shadow-sm mb-1" style="width: 60px; height: 60px; object-fit: cover;" />
+                                                    <div><span class="badge bg-success text-white" style="font-size: 10px;">Slot ${slotIndex + 1} Actual</span></div>
+                                                `;
                                 $(`#contenedor-imagen-${slotIndex}`).html(htmlImg);
                             }
                         });
