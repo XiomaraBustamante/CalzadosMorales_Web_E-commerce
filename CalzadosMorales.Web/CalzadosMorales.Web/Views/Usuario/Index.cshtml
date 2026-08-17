@@ -52,8 +52,8 @@
                         <th style="width: 25%; color: #475569; font-weight: 700;" class="py-3">Nombre Completo ↕</th>
                         <th style="width: 20%; color: #475569; font-weight: 700;" class="py-3">Usuario ↕</th>
                         <th style="width: 17%; color: #475569; font-weight: 700;" class="py-3">Rol ↕</th>
-                        <th style="width: 15%; color: #475569; font-weight: 700;" class="py-3 text-center">Estado ↕</th>
-                        <th style="width: 15%; color: #475569; font-weight: 700;" class="py-3 text-center">Acciones ↕</th>
+                        <th style="width: 15%; color: #475569; font-weight: 700;" class="text-center py-3">Estado ↕</th>
+                        <th style="width: 15%; color: #475569; font-weight: 700;" class="text-center py-3">Acciones ↕</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -92,23 +92,17 @@
                                             <i class="fas fa-pen"></i>
                                         </button>
 
-                                        <form asp-action="CambiarEstado" asp-controller="Usuario" method="post" class="d-inline">
-                                            <input type="hidden" name="idUsuario" value="@item.IdUsuario" />
-                                            <input type="hidden" name="estado" value="false" />
-                                            <button type="submit" class="btn btn-sm shadow-sm" style="background-color: #ffe4e6; color: #f43f5e;" title="Desactivar">
-                                                <i class="fas fa-times"></i>
-                                            </button>
-                                        </form>
+                                        <button type="button" class="btn btn-sm shadow-sm" style="background-color: #ffe4e6; color: #f43f5e;"
+                                                onclick="cambiarEstadoUsuario(@item.IdUsuario, false)" title="Desactivar">
+                                            <i class="fas fa-times"></i>
+                                        </button>
                                     }
                                     else
                                     {
-                                        <form asp-action="CambiarEstado" asp-controller="Usuario" method="post" class="d-inline">
-                                            <input type="hidden" name="idUsuario" value="@item.IdUsuario" />
-                                            <input type="hidden" name="estado" value="true" />
-                                            <button type="submit" class="btn btn-sm shadow-sm" style="background-color: #d1fae5; color: #059669;" title="Activar">
-                                                <i class="fas fa-check"></i>
-                                            </button>
-                                        </form>
+                                        <button type="button" class="btn btn-sm shadow-sm" style="background-color: #d1fae5; color: #059669;"
+                                                onclick="cambiarEstadoUsuario(@item.IdUsuario, true)" title="Activar">
+                                            <i class="fas fa-check"></i>
+                                        </button>
                                     }
                                 </td>
                             </tr>
@@ -158,13 +152,13 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
 
-            <form id="formUsuario" asp-action="Registrar" asp-controller="Usuario" method="post" class="needs-validation" novalidate>
+            <form id="formUsuario" class="needs-validation" action="/Usuario/Registrar" method="post" novalidate>
                 <div class="modal-body py-4">
-                    <input type="hidden" id="id_usuario" name="idUsuario" value="0">
+                    <input type="hidden" id="id_usuario" name="IdUsuario" value="0">
 
                     <div class="form-group mb-3">
                         <label class="form-label fw-bold text-dark">Nombre Completo</label>
-                        <input type="text" class="form-control" id="nombre" name="nombre" required placeholder="Ej: Juan Pérez">
+                        <input type="text" class="form-control" id="nombre" name="Nombre" required placeholder="Ej: Juan Pérez">
                         <div class="invalid-feedback">
                             Por favor ingrese el nombre completo.
                         </div>
@@ -172,7 +166,7 @@
 
                     <div class="form-group mb-3">
                         <label class="form-label fw-bold text-dark">Usuario (Login)</label>
-                        <input type="text" class="form-control" id="usuario" name="usuario" required placeholder="Ej: jperez">
+                        <input type="text" class="form-control" id="usuario" name="UserLogin" required placeholder="Ej: jperez">
                         <div class="invalid-feedback">
                             Por favor ingrese el nombre de usuario.
                         </div>
@@ -180,7 +174,7 @@
 
                     <div class="form-group mb-3" id="grupoClave">
                         <label class="form-label fw-bold text-dark">Contraseña</label>
-                        <input type="password" class="form-control" id="clave" name="clave" required placeholder="••••••••">
+                        <input type="password" class="form-control" id="clave" name="Clave" required placeholder="••••••••">
                         <div class="invalid-feedback">
                             Por favor ingrese una contraseña.
                         </div>
@@ -188,7 +182,7 @@
 
                     <div class="form-group mb-3">
                         <label class="form-label fw-bold text-dark">Rol</label>
-                        <select class="form-select" id="idRol" name="idRol" required>
+                        <select class="form-select" id="idRol" name="IdRol" required>
                             <option value="">Seleccione un rol...</option>
                             @if (ViewBag.Roles != null)
                             {
@@ -205,7 +199,7 @@
                 </div>
                 <div class="modal-footer bg-light">
                     <button type="button" class="btn btn-secondary px-3" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-primary px-4 text-white" style="background-color: #8b5cf6; border-color: #8b5cf6; font-weight: 600;">Guardar</button>
+                    <button type="button" class="btn btn-primary px-4 text-white" style="background-color: #8b5cf6; border-color: #8b5cf6; font-weight: 600;" onclick="enviarFormulario()">Guardar</button>
                 </div>
             </form>
         </div>
@@ -245,11 +239,11 @@
             var form = document.getElementById('formUsuario');
             form.action = '/Usuario/Actualizar';
 
-            // Al editar, ocultamos y quitamos la obligatoriedad de la clave (para no sobreescribirla por accidente)
             document.getElementById('grupoClave').style.display = 'none';
             document.getElementById('clave').removeAttribute('required');
+            document.getElementById('clave').value = '';
 
-            document.querySelector('.needs-validation').classList.remove('was-validated');
+            form.classList.remove('was-validated');
         }
 
         // Limpiar el modal para la opción Nuevo Usuario
@@ -264,26 +258,104 @@
             var form = document.getElementById('formUsuario');
             form.action = '/Usuario/Registrar';
 
-            // Al crear, mostramos y exigimos la contraseña
             document.getElementById('grupoClave').style.display = 'block';
             document.getElementById('clave').setAttribute('required', 'required');
 
-            document.querySelector('.needs-validation').classList.remove('was-validated');
+            form.classList.remove('was-validated');
         }
 
-        // Validación de Bootstrap para formularios
-        (function() {
-            'use strict'
-            var forms = document.querySelectorAll('.needs-validation')
-            Array.prototype.slice.call(forms).forEach(function(form) {
-                form.addEventListener('submit', function(event) {
-                    if (!form.checkValidity()) {
-                        event.preventDefault()
-                        event.stopPropagation()
-                    }
-                    form.classList.add('was-validated')
-                }, false)
+        // Función AJAX para enviar formulario (Registrar / Actualizar) con SweetAlert2
+        function enviarFormulario() {
+            var form = document.getElementById('formUsuario');
+            if (!form.checkValidity()) {
+                form.classList.add('was-validated');
+                return;
+            }
+
+            var formData = new FormData(form);
+            var url = form.action;
+
+            fetch(url, {
+                method: 'POST',
+                body: formData
             })
-        })();
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        var modalElement = document.getElementById('modalUsuario');
+                        var modalInstance = bootstrap.Modal.getInstance(modalElement);
+                        if (modalInstance) {
+                            modalInstance.hide();
+                        }
+
+                        Swal.fire({
+                            icon: 'success',
+                            title: '¡Éxito!',
+                            text: data.message,
+                            confirmButtonColor: '#8b5cf6'
+                        }).then(() => {
+                            location.reload();
+                        });
+                    } else {
+                        let mensaje = data.errors ? data.errors.join('<br>') : data.message;
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            html: mensaje,
+                            confirmButtonColor: '#8b5cf6'
+                        });
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Ocurrió un problema inesperado en la comunicación.',
+                        confirmButtonColor: '#8b5cf6'
+                    });
+                });
+        }
+
+        // Función AJAX para Activar / Desactivar usuario
+        function cambiarEstadoUsuario(idUsuario, nuevoEstado) {
+            var formData = new FormData();
+            formData.append("idUsuario", idUsuario);
+            formData.append("estado", nuevoEstado);
+
+            fetch('/Usuario/CambiarEstado', {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: '¡Éxito!',
+                            text: data.message,
+                            confirmButtonColor: '#8b5cf6'
+                        }).then(() => {
+                            location.reload();
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: data.message,
+                            confirmButtonColor: '#8b5cf6'
+                        });
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Ocurrió un problema inesperado al cambiar el estado.',
+                        confirmButtonColor: '#8b5cf6'
+                    });
+                });
+        }
     </script>
 }

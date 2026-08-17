@@ -10,22 +10,18 @@ namespace CalzadosMorales.Web.Models
         [Column("id_usuario")]
         public int IdUsuario { get; set; }
 
-        [Required]
         [Column("nombre")]
-        [StringLength(100)]
+        [Required(ErrorMessage = "El nombre es obligatorio.")]
+        [RegularExpression(@"^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$", ErrorMessage = "El nombre solo debe contener letras y espacios.")]
         public string Nombre { get; set; }
 
-        [Required]
         [Column("usuario")]
-        [StringLength(50)]
         public string UserLogin { get; set; }
 
-        [Required]
+        // Se quita [Required] y se hace nullable (?) para que no falle al actualizar sin cambiar la clave
         [Column("clave")]
-        [StringLength(255)]
-        public string Clave { get; set; }
+        public string? Clave { get; set; }
 
-        [Required]
         [Column("id_rol")]
         public int IdRol { get; set; }
 
@@ -33,6 +29,6 @@ namespace CalzadosMorales.Web.Models
         public bool Estado { get; set; } = true;
 
         [ForeignKey("IdRol")]
-        public virtual Rol Rol { get; set; }
+        public virtual Rol? Rol { get; set; }
     }
 }

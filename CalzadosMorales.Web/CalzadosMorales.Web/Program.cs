@@ -23,6 +23,8 @@ builder.Services.AddScoped<CalzadosMorales.Web.Repositorio.MaestroRepository>();
 builder.Services.AddScoped<CalzadosMorales.Web.Servicios.MaestroService>();
 builder.Services.AddScoped<ProductoRepository>();
 builder.Services.AddScoped<ProductoService>();
+builder.Services.AddScoped<ProductoTiendaRepository>();
+builder.Services.AddScoped<ProductoTiendaService>();
 builder.Services.AddScoped<CalzadosMorales.Web.Repositorio.ClienteRepository>();
 builder.Services.AddScoped<CalzadosMorales.Web.Servicios.ClienteService>();
 builder.Services.AddScoped<UsuarioRepository>();

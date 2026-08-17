@@ -1,9 +1,7 @@
-﻿using CalzadosMorales.Web.Servicios;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
+﻿using CalzadosMorales.Web.Models;
+using CalzadosMorales.Web.Servicios;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 namespace CalzadosMorales.Web.Controllers
 {
@@ -36,33 +34,86 @@ namespace CalzadosMorales.Web.Controllers
             var usuario = _usuarioService.ObtenerUsuarioPorId(id);
             if (usuario == null)
             {
-                return NotFound();
+                return Json(new { success = false, message = "Usuario no encontrado." });
             }
             return Json(usuario);
         }
 
         // POST: /Usuario/Registrar
         [HttpPost]
-        public IActionResult Registrar(string nombre, string usuario, string clave, int idRol)
+        public IActionResult Registrar(Usuario usuario)
         {
-            _usuarioService.RegistrarUsuario(nombre, usuario, clave, idRol);
-            return RedirectToAction("Index");
+            // Evita conflictos si el ID viene con un valor residual al crear
+            ModelState.Remove("IdUsuario");
+
+            // Validar las reglas del modelo ([Required], [StringLength], etc.)
+            if (!ModelState.IsValid)
+            {
+                var errores = ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage)
+                    .ToList();
+
+                return Json(new { success = false, message = "Por favor, corrija los siguientes errores:", errors = errores });
+            }
+
+            try
+            {
+                _usuarioService.RegistrarUsuario(usuario.Nombre, usuario.UserLogin, usuario.Clave, usuario.IdRol);
+                return Json(new { success = true, message = "¡Usuario registrado correctamente!" });
+            }
+            catch (System.Exception ex)
+            {
+                return Json(new { success = false, message = "Error al registrar el usuario: " + ex.Message });
+            }
         }
 
         // POST: /Usuario/Actualizar
         [HttpPost]
-        public IActionResult Actualizar(int idUsuario, string nombre, string usuario, int idRol)
+        public IActionResult Actualizar(Usuario usuario)
         {
-            _usuarioService.ActualizarUsuario(idUsuario, nombre, usuario, idRol);
-            return RedirectToAction("Index");
+            // Omitir siempre la validación de clave al actualizar (ya que no se modifica en este form)
+            ModelState.Remove("Clave");
+
+            if (usuario.IdUsuario <= 0)
+            {
+                return Json(new { success = false, message = "El ID del usuario es inválido." });
+            }
+
+            if (!ModelState.IsValid)
+            {
+                var errores = ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage)
+                    .ToList();
+
+                return Json(new { success = false, message = "Por favor, corrija los siguientes errores:", errors = errores });
+            }
+
+            try
+            {
+                _usuarioService.ActualizarUsuario(usuario.IdUsuario, usuario.Nombre, usuario.UserLogin, usuario.IdRol);
+                return Json(new { success = true, message = "¡Usuario actualizado correctamente!" });
+            }
+            catch (System.Exception ex)
+            {
+                return Json(new { success = false, message = "Error al actualizar el usuario: " + ex.Message });
+            }
         }
 
         // POST: /Usuario/CambiarEstado
         [HttpPost]
         public IActionResult CambiarEstado(int idUsuario, bool estado)
         {
-            _usuarioService.CambiarEstadoUsuario(idUsuario, estado);
-            return RedirectToAction("Index");
+            try
+            {
+                _usuarioService.CambiarEstadoUsuario(idUsuario, estado);
+                return Json(new { success = true, message = "Estado actualizado correctamente." });
+            }
+            catch (System.Exception ex)
+            {
+                return Json(new { success = false, message = "Error al cambiar el estado: " + ex.Message });
+            }
         }
     }
 }

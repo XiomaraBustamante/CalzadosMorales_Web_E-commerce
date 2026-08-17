@@ -13,62 +13,69 @@ namespace CalzadosMorales.Web.Repositorio
             _cadenaConexion = configuration.GetConnectionString("CadenaSQL");
         }
 
-        // Obtener producto por ID (con tallas y ahora también con imágenes)
+        // Obtener producto por ID (con tallas y también con imágenes)
         public Producto ObtenerProductoPorId(int idProducto)
         {
             Producto producto = null;
-            using (var conexion = new SqlConnection(_cadenaConexion))
+            try
             {
-                conexion.Open();
-
-                // 1. Obtener los datos básicos del producto
-                using (var cmd = new SqlCommand("sp_BuscarProductoPorId", conexion))
+                using (var conexion = new SqlConnection(_cadenaConexion))
                 {
-                    cmd.CommandType = CommandType.StoredProcedure;
-                    cmd.Parameters.AddWithValue("@id_producto", idProducto);
-                    using (var dr = cmd.ExecuteReader())
-                    {
-                        if (dr.Read())
-                        {
-                            producto = new Producto
-                            {
-                                IdProducto = Convert.ToInt32(dr["id_producto"]),
-                                Nombre = dr["nombre"].ToString(),
-                                Descripcion = dr["descripcion"] != DBNull.Value ? dr["descripcion"].ToString() : "",
-                                Precio = Convert.ToDecimal(dr["precio"]),
-                                IdCategoria = Convert.ToInt32(dr["id_categoria"]),
-                                IdColor = dr["id_color"] != DBNull.Value ? Convert.ToInt32(dr["id_color"]) : (int?)null,
-                                IdMaterial = dr["id_material"] != DBNull.Value ? Convert.ToInt32(dr["id_material"]) : (int?)null,
-                                Estado = Convert.ToBoolean(dr["estado"])
-                            };
-                        }
-                    }
-                }
+                    conexion.Open();
 
-                if (producto != null)
-                {
-                    // 2. Obtener las tallas y stocks asociados
-                    using (var cmdTallas = new SqlCommand("sp_ListarTallasPorProducto", conexion))
+                    // 1. Obtener los datos básicos del producto
+                    using (var cmd = new SqlCommand("sp_BuscarProductoPorId", conexion))
                     {
-                        cmdTallas.CommandType = CommandType.StoredProcedure;
-                        cmdTallas.Parameters.AddWithValue("@id_producto", idProducto);
-                        using (var drTallas = cmdTallas.ExecuteReader())
+                        cmd.CommandType = CommandType.StoredProcedure;
+                        cmd.Parameters.AddWithValue("@id_producto", idProducto);
+                        using (var dr = cmd.ExecuteReader())
                         {
-                            while (drTallas.Read())
+                            if (dr.Read())
                             {
-                                producto.ListaTallasStock.Add(new ProductoTalla
+                                producto = new Producto
                                 {
-                                    IdProducto = idProducto,
-                                    IdTalla = Convert.ToInt32(drTallas["id_talla"]),
-                                    Stock = Convert.ToInt32(drTallas["stock"])
-                                });
+                                    IdProducto = Convert.ToInt32(dr["id_producto"]),
+                                    Nombre = dr["nombre"].ToString(),
+                                    Descripcion = dr["descripcion"] != DBNull.Value ? dr["descripcion"].ToString() : "",
+                                    Precio = Convert.ToDecimal(dr["precio"]),
+                                    IdCategoria = Convert.ToInt32(dr["id_categoria"]),
+                                    IdColor = dr["id_color"] != DBNull.Value ? Convert.ToInt32(dr["id_color"]) : (int?)null,
+                                    IdMaterial = dr["id_material"] != DBNull.Value ? Convert.ToInt32(dr["id_material"]) : (int?)null,
+                                    Estado = Convert.ToBoolean(dr["estado"])
+                                };
                             }
                         }
                     }
 
-                    // 3. Obtener las imágenes asociadas para el formulario de edición
-                    producto.ListaImagenes = ListarImagenesPorProducto(idProducto);
+                    if (producto != null)
+                    {
+                        // 2. Obtener las tallas y stocks asociados
+                        using (var cmdTallas = new SqlCommand("sp_ListarTallasPorProducto", conexion))
+                        {
+                            cmdTallas.CommandType = CommandType.StoredProcedure;
+                            cmdTallas.Parameters.AddWithValue("@id_producto", idProducto);
+                            using (var drTallas = cmdTallas.ExecuteReader())
+                            {
+                                while (drTallas.Read())
+                                {
+                                    producto.ListaTallasStock.Add(new ProductoTalla
+                                    {
+                                        IdProducto = idProducto,
+                                        IdTalla = Convert.ToInt32(drTallas["id_talla"]),
+                                        Stock = Convert.ToInt32(drTallas["stock"])
+                                    });
+                                }
+                            }
+                        }
+
+                        // 3. Obtener las imágenes asociadas para el formulario de edición
+                        producto.ListaImagenes = ListarImagenesPorProducto(idProducto);
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error al obtener el producto por ID: " + ex.Message);
             }
             return producto;
         }
@@ -77,37 +84,44 @@ namespace CalzadosMorales.Web.Repositorio
         public List<Producto> ListarProductos()
         {
             var lista = new List<Producto>();
-            using (var conexion = new SqlConnection(_cadenaConexion))
+            try
             {
-                conexion.Open();
-                using (var cmd = new SqlCommand("sp_ListarProductos", conexion))
+                using (var conexion = new SqlConnection(_cadenaConexion))
                 {
-                    cmd.CommandType = CommandType.StoredProcedure;
-                    using (var dr = cmd.ExecuteReader())
+                    conexion.Open();
+                    using (var cmd = new SqlCommand("sp_ListarProductos", conexion))
                     {
-                        while (dr.Read())
+                        cmd.CommandType = CommandType.StoredProcedure;
+                        using (var dr = cmd.ExecuteReader())
                         {
-                            lista.Add(new Producto
+                            while (dr.Read())
                             {
-                                IdProducto = Convert.ToInt32(dr["id_producto"]),
-                                Nombre = dr["nombre"].ToString(),
-                                Descripcion = dr["descripcion"] != DBNull.Value ? dr["descripcion"].ToString() : "",
-                                Precio = Convert.ToDecimal(dr["precio"]),
-                                IdCategoria = Convert.ToInt32(dr["id_categoria"]),
-                                IdColor = dr["id_color"] != DBNull.Value ? Convert.ToInt32(dr["id_color"]) : (int?)null,
-                                IdMaterial = dr["id_material"] != DBNull.Value ? Convert.ToInt32(dr["id_material"]) : (int?)null,
-                                Estado = Convert.ToBoolean(dr["estado"]),
+                                lista.Add(new Producto
+                                {
+                                    IdProducto = Convert.ToInt32(dr["id_producto"]),
+                                    Nombre = dr["nombre"].ToString(),
+                                    Descripcion = dr["descripcion"] != DBNull.Value ? dr["descripcion"].ToString() : "",
+                                    Precio = Convert.ToDecimal(dr["precio"]),
+                                    IdCategoria = Convert.ToInt32(dr["id_categoria"]),
+                                    IdColor = dr["id_color"] != DBNull.Value ? Convert.ToInt32(dr["id_color"]) : (int?)null,
+                                    IdMaterial = dr["id_material"] != DBNull.Value ? Convert.ToInt32(dr["id_material"]) : (int?)null,
+                                    Estado = Convert.ToBoolean(dr["estado"]),
 
-                                // Campos informativos y de visualización en tabla
-                                CategoriaNombre = dr["categoria_nombre"].ToString(),
-                                ColorNombre = dr["color_nombre"] != DBNull.Value ? dr["color_nombre"].ToString() : "Sin Color",
-                                MaterialTipo = dr["material_tipo"] != DBNull.Value ? dr["material_tipo"].ToString() : "Sin Material",
-                                Talla = dr["talla"] != DBNull.Value ? dr["talla"].ToString() : "N/A",
-                                Stock = Convert.ToInt32(dr["stock"])
-                            });
+                                    // Campos informativos y de visualización en tabla
+                                    CategoriaNombre = dr["categoria_nombre"].ToString(),
+                                    ColorNombre = dr["color_nombre"] != DBNull.Value ? dr["color_nombre"].ToString() : "Sin Color",
+                                    MaterialTipo = dr["material_tipo"] != DBNull.Value ? dr["material_tipo"].ToString() : "Sin Material",
+                                    Talla = dr["talla"] != DBNull.Value ? dr["talla"].ToString() : "N/A",
+                                    Stock = Convert.ToInt32(dr["stock"])
+                                });
+                            }
                         }
                     }
                 }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error al listar los productos: " + ex.Message);
             }
             return lista;
         }
@@ -116,28 +130,39 @@ namespace CalzadosMorales.Web.Repositorio
         public int RegistrarProducto(Producto producto)
         {
             int idGenerado = 0;
-            using (var conexion = new SqlConnection(_cadenaConexion))
+            try
             {
-                conexion.Open();
-                using (var cmd = new SqlCommand("sp_RegistrarProducto", conexion))
+                using (var conexion = new SqlConnection(_cadenaConexion))
                 {
-                    cmd.CommandType = CommandType.StoredProcedure;
-                    cmd.Parameters.AddWithValue("@nombre", producto.Nombre);
-                    cmd.Parameters.AddWithValue("@descripcion", producto.Descripcion ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@id_color", producto.IdColor ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@id_material", producto.IdMaterial ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@precio", producto.Precio);
-                    cmd.Parameters.AddWithValue("@id_categoria", producto.IdCategoria);
-
-                    SqlParameter paramOutput = new SqlParameter("@nuevo_id", SqlDbType.Int)
+                    conexion.Open();
+                    using (var cmd = new SqlCommand("sp_RegistrarProducto", conexion))
                     {
-                        Direction = ParameterDirection.Output
-                    };
-                    cmd.Parameters.Add(paramOutput);
+                        cmd.CommandType = CommandType.StoredProcedure;
+                        cmd.Parameters.AddWithValue("@nombre", producto.Nombre);
+                        cmd.Parameters.AddWithValue("@descripcion", producto.Descripcion ?? (object)DBNull.Value);
+                        cmd.Parameters.AddWithValue("@id_color", producto.IdColor ?? (object)DBNull.Value);
+                        cmd.Parameters.AddWithValue("@id_material", producto.IdMaterial ?? (object)DBNull.Value);
+                        cmd.Parameters.AddWithValue("@precio", producto.Precio);
+                        cmd.Parameters.AddWithValue("@id_categoria", producto.IdCategoria);
 
-                    cmd.ExecuteNonQuery();
-                    idGenerado = Convert.ToInt32(paramOutput.Value);
+                        SqlParameter paramOutput = new SqlParameter("@nuevo_id", SqlDbType.Int)
+                        {
+                            Direction = ParameterDirection.Output
+                        };
+                        cmd.Parameters.Add(paramOutput);
+
+                        cmd.ExecuteNonQuery();
+                        idGenerado = Convert.ToInt32(paramOutput.Value);
+                    }
                 }
+            }
+            catch (SqlException ex)
+            {
+                throw new Exception("Error de base de datos al registrar el producto: " + ex.Message);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error inesperado al registrar el producto: " + ex.Message);
             }
             return idGenerado;
         }
@@ -145,131 +170,178 @@ namespace CalzadosMorales.Web.Repositorio
         // Actualizar producto
         public void ActualizarProducto(Producto producto)
         {
-            using (var conexion = new SqlConnection(_cadenaConexion))
+            try
             {
-                conexion.Open();
-                using (var cmd = new SqlCommand("sp_ActualizarProducto", conexion))
+                using (var conexion = new SqlConnection(_cadenaConexion))
                 {
-                    cmd.CommandType = CommandType.StoredProcedure;
-                    cmd.Parameters.AddWithValue("@id_producto", producto.IdProducto);
-                    cmd.Parameters.AddWithValue("@nombre", producto.Nombre);
-                    cmd.Parameters.AddWithValue("@descripcion", producto.Descripcion ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@id_color", producto.IdColor ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@id_material", producto.IdMaterial ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@precio", producto.Precio);
-                    cmd.Parameters.AddWithValue("@id_categoria", producto.IdCategoria);
+                    conexion.Open();
+                    using (var cmd = new SqlCommand("sp_ActualizarProducto", conexion))
+                    {
+                        cmd.CommandType = CommandType.StoredProcedure;
+                        cmd.Parameters.AddWithValue("@id_producto", producto.IdProducto);
+                        cmd.Parameters.AddWithValue("@nombre", producto.Nombre);
+                        cmd.Parameters.AddWithValue("@descripcion", producto.Descripcion ?? (object)DBNull.Value);
+                        cmd.Parameters.AddWithValue("@id_color", producto.IdColor ?? (object)DBNull.Value);
+                        cmd.Parameters.AddWithValue("@id_material", producto.IdMaterial ?? (object)DBNull.Value);
+                        cmd.Parameters.AddWithValue("@precio", producto.Precio);
+                        cmd.Parameters.AddWithValue("@id_categoria", producto.IdCategoria);
 
-                    cmd.ExecuteNonQuery();
+                        cmd.ExecuteNonQuery();
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error al actualizar el producto: " + ex.Message);
             }
         }
 
         // Cambiar Estado (Activo / Inactivo)
         public void CambiarEstadoProducto(int idProducto, bool estado)
         {
-            using (var conexion = new SqlConnection(_cadenaConexion))
+            try
             {
-                conexion.Open();
-                using (var cmd = new SqlCommand("sp_CambiarEstadoProducto", conexion))
+                using (var conexion = new SqlConnection(_cadenaConexion))
                 {
-                    cmd.CommandType = CommandType.StoredProcedure;
-                    cmd.Parameters.AddWithValue("@id_producto", idProducto);
-                    cmd.Parameters.AddWithValue("@estado", estado);
-                    cmd.ExecuteNonQuery();
+                    conexion.Open();
+                    using (var cmd = new SqlCommand("sp_CambiarEstadoProducto", conexion))
+                    {
+                        cmd.CommandType = CommandType.StoredProcedure;
+                        cmd.Parameters.AddWithValue("@id_producto", idProducto);
+                        cmd.Parameters.AddWithValue("@estado", estado);
+                        cmd.ExecuteNonQuery();
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error al cambiar el estado del producto: " + ex.Message);
             }
         }
 
         // Guardar o actualizar stock de tallas
         public void GuardarProductoTallaStock(int idProducto, int idTalla, int stock)
         {
-            using (var conexion = new SqlConnection(_cadenaConexion))
+            try
             {
-                conexion.Open();
-                using (var cmd = new SqlCommand("sp_GuardarProductoTallaStock", conexion))
+                using (var conexion = new SqlConnection(_cadenaConexion))
                 {
-                    cmd.CommandType = CommandType.StoredProcedure;
-                    cmd.Parameters.AddWithValue("@id_producto", idProducto);
-                    cmd.Parameters.AddWithValue("@id_talla", idTalla);
-                    cmd.Parameters.AddWithValue("@stock", stock);
-                    cmd.ExecuteNonQuery();
+                    conexion.Open();
+                    using (var cmd = new SqlCommand("sp_GuardarProductoTallaStock", conexion))
+                    {
+                        cmd.CommandType = CommandType.StoredProcedure;
+                        cmd.Parameters.AddWithValue("@id_producto", idProducto);
+                        cmd.Parameters.AddWithValue("@id_talla", idTalla);
+                        cmd.Parameters.AddWithValue("@stock", stock);
+                        cmd.ExecuteNonQuery();
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error al guardar la talla y stock del producto: " + ex.Message);
             }
         }
 
-        // Registrar imagen asociada (Actualizado con el parámetro @orden)
+        // Registrar imagen asociada
         public void RegistrarImagen(int idProducto, string imagenUrl, int orden)
         {
-            using (var conexion = new SqlConnection(_cadenaConexion))
+            try
             {
-                conexion.Open();
-                using (var cmd = new SqlCommand("sp_RegistrarProductoImagen", conexion))
+                using (var conexion = new SqlConnection(_cadenaConexion))
                 {
-                    cmd.CommandType = CommandType.StoredProcedure;
-                    cmd.Parameters.AddWithValue("@id_producto", idProducto);
-                    cmd.Parameters.AddWithValue("@imagen_url", imagenUrl);
-                    cmd.Parameters.AddWithValue("@orden", orden);
-                    cmd.ExecuteNonQuery();
+                    conexion.Open();
+                    using (var cmd = new SqlCommand("sp_RegistrarProductoImagen", conexion))
+                    {
+                        cmd.CommandType = CommandType.StoredProcedure;
+                        cmd.Parameters.AddWithValue("@id_producto", idProducto);
+                        cmd.Parameters.AddWithValue("@imagen_url", imagenUrl);
+                        cmd.Parameters.AddWithValue("@orden", orden);
+                        cmd.ExecuteNonQuery();
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error al registrar la imagen del producto: " + ex.Message);
             }
         }
 
-        // --- NUEVOS MÉTODOS DE IMÁGENES ---
-
-        // Listar imágenes por producto (para el modal de editar - Actualizado para mapear Orden)
+        // Listar imágenes por producto
         public List<ProductoImagen> ListarImagenesPorProducto(int idProducto)
         {
             var lista = new List<ProductoImagen>();
-            using (var conexion = new SqlConnection(_cadenaConexion))
+            try
             {
-                conexion.Open();
-                using (var cmd = new SqlCommand("sp_ListarImagenesPorProducto", conexion))
+                using (var conexion = new SqlConnection(_cadenaConexion))
                 {
-                    cmd.CommandType = CommandType.StoredProcedure;
-                    cmd.Parameters.AddWithValue("@id_producto", idProducto);
-                    using (var dr = cmd.ExecuteReader())
+                    conexion.Open();
+                    using (var cmd = new SqlCommand("sp_ListarImagenesPorProducto", conexion))
                     {
-                        while (dr.Read())
+                        cmd.CommandType = CommandType.StoredProcedure;
+                        cmd.Parameters.AddWithValue("@id_producto", idProducto);
+                        using (var dr = cmd.ExecuteReader())
                         {
-                            lista.Add(new ProductoImagen
+                            while (dr.Read())
                             {
-                                IdImagen = Convert.ToInt32(dr["id_imagen"]),
-                                IdProducto = Convert.ToInt32(dr["id_producto"]),
-                                ImagenUrl = dr["imagen_url"].ToString(),
-                                Orden = Convert.ToInt32(dr["orden"])
-                            });
+                                lista.Add(new ProductoImagen
+                                {
+                                    IdImagen = Convert.ToInt32(dr["id_imagen"]),
+                                    IdProducto = Convert.ToInt32(dr["id_producto"]),
+                                    ImagenUrl = dr["imagen_url"].ToString(),
+                                    Orden = Convert.ToInt32(dr["orden"])
+                                });
+                            }
                         }
                     }
                 }
             }
+            catch (Exception ex)
+            {
+                throw new Exception("Error al listar las imágenes del producto: " + ex.Message);
+            }
             return lista;
         }
 
-        // Actualizar URL de una imagen existente (cuando reemplazan una foto)
+        // Actualizar URL de una imagen existente
         public void ActualizarImagen(int idImagen, string imagenUrl)
         {
-            using (var conexion = new SqlConnection(_cadenaConexion))
+            try
             {
-                conexion.Open();
-                using (var cmd = new SqlCommand("sp_ActualizarProductoImagen", conexion))
+                using (var conexion = new SqlConnection(_cadenaConexion))
                 {
-                    cmd.CommandType = CommandType.StoredProcedure;
-                    cmd.Parameters.AddWithValue("@id_imagen", idImagen);
-                    cmd.Parameters.AddWithValue("@imagen_url", imagenUrl);
-                    cmd.ExecuteNonQuery();
+                    conexion.Open();
+                    using (var cmd = new SqlCommand("sp_ActualizarProductoImagen", conexion))
+                    {
+                        cmd.CommandType = CommandType.StoredProcedure;
+                        cmd.Parameters.AddWithValue("@id_imagen", idImagen);
+                        cmd.Parameters.AddWithValue("@imagen_url", imagenUrl);
+                        cmd.ExecuteNonQuery();
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error al actualizar la imagen: " + ex.Message);
             }
         }
 
         // Limpiar tallas anteriores del producto
         public void LimpiarTallasProducto(int idProducto)
         {
-            using (var conexion = new SqlConnection(_cadenaConexion))
+            try
             {
-                var cmd = new SqlCommand("DELETE FROM producto_talla WHERE id_producto = @id", conexion);
-                cmd.Parameters.AddWithValue("@id", idProducto);
-                conexion.Open();
-                cmd.ExecuteNonQuery();
+                using (var conexion = new SqlConnection(_cadenaConexion))
+                {
+                    var cmd = new SqlCommand("DELETE FROM producto_talla WHERE id_producto = @id", conexion);
+                    cmd.Parameters.AddWithValue("@id", idProducto);
+                    conexion.Open();
+                    cmd.ExecuteNonQuery();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error al limpiar las tallas anteriores del producto: " + ex.Message);
             }
         }
     }

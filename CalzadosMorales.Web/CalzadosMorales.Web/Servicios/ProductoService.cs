@@ -14,55 +14,143 @@ namespace CalzadosMorales.Web.Servicios
 
         public List<Producto> ListarProductos()
         {
-            return _productoRepository.ListarProductos();
+            try
+            {
+                return _productoRepository.ListarProductos();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error en el servicio al listar productos: " + ex.Message);
+            }
         }
 
         public Producto ObtenerProductoPorId(int idProducto)
         {
-            return _productoRepository.ObtenerProductoPorId(idProducto);
+            try
+            {
+                if (idProducto <= 0)
+                    throw new ArgumentException("El ID del producto debe ser mayor a cero.");
+
+                return _productoRepository.ObtenerProductoPorId(idProducto);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error en el servicio al obtener el producto: " + ex.Message);
+            }
         }
 
         public int RegistrarProducto(Producto producto)
         {
-            return _productoRepository.RegistrarProducto(producto);
+            try
+            {
+                // Validación adicional de negocio opcional
+                if (producto == null)
+                    throw new ArgumentNullException(nameof(producto), "Los datos del producto no pueden estar vacíos.");
+
+                return _productoRepository.RegistrarProducto(producto);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error al registrar el producto en el servicio: " + ex.Message);
+            }
         }
 
         public void ActualizarProducto(Producto producto)
         {
-            _productoRepository.ActualizarProducto(producto);
+            try
+            {
+                if (producto == null || producto.IdProducto <= 0)
+                    throw new ArgumentException("ID de producto inválido para actualizar.");
+
+                _productoRepository.ActualizarProducto(producto);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error al actualizar el producto en el servicio: " + ex.Message);
+            }
         }
 
         public void CambiarEstadoProducto(int idProducto, bool estado)
         {
-            _productoRepository.CambiarEstadoProducto(idProducto, estado);
+            try
+            {
+                if (idProducto <= 0)
+                    throw new ArgumentException("ID de producto no válido.");
+
+                _productoRepository.CambiarEstadoProducto(idProducto, estado);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error al cambiar el estado del producto: " + ex.Message);
+            }
         }
 
         public void GuardarProductoTallaStock(int idProducto, int idTalla, int stock)
         {
-            _productoRepository.GuardarProductoTallaStock(idProducto, idTalla, stock);
+            try
+            {
+                if (stock < 0)
+                    throw new ArgumentException("El stock no puede ser negativo.");
+
+                _productoRepository.GuardarProductoTallaStock(idProducto, idTalla, stock);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error al guardar la talla y stock: " + ex.Message);
+            }
         }
 
-        // Actualizado para aceptar el parámetro 'orden'
         public void RegistrarImagen(int idProducto, string imagenUrl, int orden)
         {
-            _productoRepository.RegistrarImagen(idProducto, imagenUrl, orden);
+            try
+            {
+                if (string.IsNullOrWhiteSpace(imagenUrl))
+                    throw new ArgumentException("La URL de la imagen es obligatoria.");
+
+                _productoRepository.RegistrarImagen(idProducto, imagenUrl, orden);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error al registrar la imagen: " + ex.Message);
+            }
         }
 
         public void LimpiarTallasProducto(int idProducto)
         {
-            _productoRepository.LimpiarTallasProducto(idProducto);
+            try
+            {
+                _productoRepository.LimpiarTallasProducto(idProducto);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error al limpiar las tallas: " + ex.Message);
+            }
         }
 
         // --- Métodos de gestión de imágenes ---
 
         public List<ProductoImagen> ListarImagenesPorProducto(int idProducto)
         {
-            return _productoRepository.ListarImagenesPorProducto(idProducto);
+            try
+            {
+                return _productoRepository.ListarImagenesPorProducto(idProducto);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error al listar las imágenes del producto: " + ex.Message);
+            }
         }
 
         public void ActualizarImagen(int idImagen, string imagenUrl)
         {
-            _productoRepository.ActualizarImagen(idImagen, imagenUrl);
+            try
+            {
+                _productoRepository.ActualizarImagen(idImagen, imagenUrl);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error al actualizar la imagen: " + ex.Message);
+            }
         }
     }
 }

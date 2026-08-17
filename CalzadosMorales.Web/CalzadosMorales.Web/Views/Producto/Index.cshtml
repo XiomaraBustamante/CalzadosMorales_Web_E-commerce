@@ -76,7 +76,7 @@
                                                     <i class="mdi mdi-pencil"></i>
                                                 </button>
                                                 <button class="btn btn-sm btn-@(item.Estado ? "danger" : "success") text-white" onclick="cambiarEstadoProducto(@item.IdProducto, @item.Estado.ToString().ToLower())" title="@(item.Estado ? "Desactivar" : "Activar")">
-                                                    <i class="mdi mdi-@(item.Estado ? "delete" : "check-circle")"></i>
+                                                    <i class="mdi mdi-@(item.Estado ? "close-circle" : "check-circle")"></i>
                                                 </button>
                                             </td>
                                         </tr>
@@ -116,7 +116,7 @@
                 <button type="button" class="btn-close btn-close-white shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
 
-            <form asp-action="Registrar" id="formProducto" method="post" enctype="multipart/form-data">
+            <form id="formProducto" method="post" enctype="multipart/form-data">
                 <div class="modal-body p-4 bg-light" style="max-height: 75vh; overflow-y: auto;">
                     <input type="hidden" id="IdProducto" name="IdProducto" value="0" />
 
@@ -170,7 +170,7 @@
                         </div>
                     </div>
 
-                    <!-- SUBIDA DE IMÁGENES (Actualizado con ImagenFormModel y sus Ordenes explícitos) -->
+                    <!-- SUBIDA DE IMÁGENES -->
                     <div class="card border-0 shadow-sm mb-3 rounded-3">
                         <div class="card-body">
                             <h6 class="text-primary font-weight-bold mb-1">
@@ -250,6 +250,9 @@
 </div>
 
 @section Scripts {
+    <!-- Importar SweetAlert2 desde CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <script>
         function limpiarModal() {
             $("#formProducto")[0].reset();
@@ -299,19 +302,18 @@
                         });
                     }
 
-                    // Cargar imágenes actuales en sus slots correspondientes (0, 1, 2) usando la propiedad 'orden'
+                    // Cargar imágenes actuales en sus slots correspondientes (0, 1, 2)
                     if (imagenes && imagenes.length > 0) {
                         $.each(imagenes, function(index, img) {
                             let urlImg = img.imagenUrl || img.ImagenUrl || img.urlImagen || img.UrlImagen;
-                            // Mapea basándose en la propiedad 'orden' de la BD (ej. orden 1 -> slot 0)
                             let ordenVal = img.orden !== undefined ? img.orden : (img.Orden !== undefined ? img.Orden : 0);
                             let slotIndex = (ordenVal > 0) ? ordenVal - 1 : index;
 
                             if (slotIndex < 3 && urlImg) {
                                 let htmlImg = `
-                                                    <img src="${urlImg}" class="rounded shadow-sm mb-1" style="width: 60px; height: 60px; object-fit: cover;" />
-                                                    <div><span class="badge bg-success text-white" style="font-size: 10px;">Slot ${slotIndex + 1} Actual</span></div>
-                                                `;
+                                            <img src="${urlImg}" class="rounded shadow-sm mb-1" style="width: 60px; height: 60px; object-fit: cover;" />
+                                            <div><span class="badge bg-success text-white" style="font-size: 10px;">Slot ${slotIndex + 1} Actual</span></div>
+                                        `;
                                 $(`#contenedor-imagen-${slotIndex}`).html(htmlImg);
                             }
                         });
@@ -322,15 +324,102 @@
             });
         }
 
+        // Interceptar envío mediante AJAX para manejar la respuesta con SweetAlert2
+        $(document).ready(function() {
+            $("#formProducto").on("submit", function(e) {
+                e.preventDefault();
+
+                let form = this;
+                let urlAccion = $(form).attr("action");
+                let formData = new FormData(form);
+
+                Swal.fire({
+                    title: 'Procesando...',
+                    text: 'Guardando información del producto...',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                $.ajax({
+                    url: urlAccion,
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+                        if (response.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: '¡Éxito!',
+                                text: response.message,
+                                timer: 1500,
+                                showConfirmButton: false
+                            }).then(() => {
+                                $("#modalProducto").modal("hide");
+                                location.reload();
+                            });
+                        } else {
+                            let mensajeError = response.message || 'Ocurrió un error al registrar.';
+                            if (response.errors && response.errors.length > 0) {
+                                mensajeError += "<br><ul style='text-align: left; margin-top: 10px;'>";
+                                response.errors.forEach(err => {
+                                    mensajeError += `<li>${err}</li>`;
+                                });
+                                mensajeError += "</ul>";
+                            }
+
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Atención',
+                                html: mensajeError
+                            });
+                        }
+                    },
+                    error: function() {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error de servidor',
+                            text: 'No se pudo completar la operación solicitada.'
+                        });
+                    }
+                });
+            });
+        });
+
         function cambiarEstadoProducto(id, estadoActual) {
             let nuevoEstado = !estadoActual;
             let mensaje = nuevoEstado ? "¿Desea activar este producto?" : "¿Está seguro de desactivar este producto?";
 
-            if (confirm(mensaje)) {
-                $.post("/Producto/CambiarEstado", { idProducto: id, estado: nuevoEstado }, function(res) {
-                    location.reload();
-                });
-            }
+            Swal.fire({
+                title: '¿Estás seguro?',
+                text: mensaje,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Sí, cambiar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.post("/Producto/CambiarEstado", { idProducto: id, estado: nuevoEstado }, function(res) {
+                        if (res.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: '¡Actualizado!',
+                                text: res.message,
+                                timer: 1200,
+                                showConfirmButton: false
+                            }).then(() => {
+                                location.reload();
+                            });
+                        } else {
+                            Swal.fire('Error', res.message, 'error');
+                        }
+                    });
+                }
+            });
         }
     </script>
 }
