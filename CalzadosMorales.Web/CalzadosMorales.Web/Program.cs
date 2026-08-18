@@ -13,9 +13,7 @@ var cloudinaryAccount = new Account(
 var cloudinary = new Cloudinary(cloudinaryAccount);
 builder.Services.AddSingleton(cloudinary);
 
-
 builder.Services.AddControllersWithViews();
-
 builder.Services.AddTransient<CalzadosMorales.Web.Datos.ConexionBD>();
 builder.Services.AddTransient<AdminRepository>();
 builder.Services.AddTransient<AdminService>();
@@ -25,6 +23,8 @@ builder.Services.AddScoped<ProductoRepository>();
 builder.Services.AddScoped<ProductoService>();
 builder.Services.AddScoped<ProductoTiendaRepository>();
 builder.Services.AddScoped<ProductoTiendaService>();
+builder.Services.AddScoped<FiltroTiendaRepository>();
+builder.Services.AddScoped<FiltroTiendaService>();
 builder.Services.AddScoped<CalzadosMorales.Web.Repositorio.ClienteRepository>();
 builder.Services.AddScoped<CalzadosMorales.Web.Servicios.ClienteService>();
 builder.Services.AddScoped<UsuarioRepository>();
@@ -32,35 +32,35 @@ builder.Services.AddScoped<UsuarioService>();
 builder.Services.AddScoped<ReporteRepository>();
 builder.Services.AddScoped<ReporteService>();
 
-
+// --- CONFIGURACIÓN DE DOBLE COOKIE LIMPIA Y ÚNICA ---
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-    .AddCookie(options =>
+    .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
     {
-        options.LoginPath = "/Acceso/Login";
+        options.LoginPath = "/ClienteAuth/Index"; // Ruta del login de cliente
+        options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
+    })
+    .AddCookie("AdminCookie", options =>
+    {
+        options.LoginPath = "/Acceso/Login"; // Ruta del login de administrador
         options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
     });
 
 var app = builder.Build();
 
-
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-
     app.UseHsts();
 }
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-
 app.UseRouting();
-
 app.UseAuthentication();
 app.UseAuthorization();
 
-
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Acceso}/{action=Login}/{id?}");
+    pattern: "{controller=Tienda}/{action=Index}/{id?}");
 
 app.Run();

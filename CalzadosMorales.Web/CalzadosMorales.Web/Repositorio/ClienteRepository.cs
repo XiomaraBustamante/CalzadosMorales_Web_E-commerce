@@ -1,4 +1,5 @@
 ﻿using CalzadosMorales.Web.Models;
+using Microsoft.AspNetCore.Identity; // <-- 1. Necesario para encriptar la contraseña
 using Microsoft.Data.SqlClient;
 using System.Data;
 
@@ -88,29 +89,59 @@ namespace CalzadosMorales.Web.Repositorio
             return lista;
         }
 
-        public void RegistrarPersonaNatural(string dni, int genero, string nombre, string apellido, string telefono, string email, string direccion)
+        public void RegistrarPersonaNatural(string dni, int genero, string nombre, string apellido, string telefono, string email, string direccion, string passwordPlana)
         {
-            using (var conexion = new SqlConnection(_cadenaConexion))
-            {
-                using (var cmd = new SqlCommand("sp_RegistrarPersonaNatural", conexion))
-                {
-                    cmd.CommandType = CommandType.StoredProcedure;
-                    cmd.Parameters.AddWithValue("@dni", dni);
-                    cmd.Parameters.AddWithValue("@genero", genero);
-                    cmd.Parameters.AddWithValue("@nombre", nombre);
-                    cmd.Parameters.AddWithValue("@apellido", apellido);
-                    cmd.Parameters.AddWithValue("@telefono", telefono);
-                    cmd.Parameters.AddWithValue("@email", email);
-                    cmd.Parameters.AddWithValue("@direccion", direccion);
+            string passwordHash = null;
 
-                    conexion.Open();
-                    cmd.ExecuteNonQuery();
+            if (!string.IsNullOrEmpty(passwordPlana))
+            {
+                var passwordHasher = new PasswordHasher<object>();
+                passwordHash = passwordHasher.HashPassword(null, passwordPlana);
+            }
+
+            try
+            {
+                using (var conexion = new SqlConnection(_cadenaConexion))
+                {
+                    using (var cmd = new SqlCommand("sp_RegistrarPersonaNatural", conexion))
+                    {
+                        cmd.CommandType = CommandType.StoredProcedure;
+                        cmd.Parameters.AddWithValue("@dni", dni);
+                        cmd.Parameters.AddWithValue("@genero", genero);
+                        cmd.Parameters.AddWithValue("@nombre", nombre);
+                        cmd.Parameters.AddWithValue("@apellido", apellido);
+                        cmd.Parameters.AddWithValue("@telefono", telefono);
+                        cmd.Parameters.AddWithValue("@email", email);
+                        cmd.Parameters.AddWithValue("@direccion", direccion);
+                        cmd.Parameters.AddWithValue("@password", (object)passwordHash ?? DBNull.Value);
+
+                        conexion.Open();
+                        cmd.ExecuteNonQuery();
+                    }
                 }
+            }
+            catch (SqlException ex)
+            {
+                // 2627 y 2601 son los códigos de error en SQL Server para duplicidad de Unique Key / Primary Key
+                if (ex.Number == 2627 || ex.Number == 2601)
+                {
+                    throw new Exception("El DNI o el correo electrónico ya se encuentran registrados en el sistema.");
+                }
+                throw new Exception("Error de base de datos: " + ex.Message);
             }
         }
 
-        public void ActualizarPersonaNatural(int idCliente, string dni, int genero, string nombre, string apellido, string telefono, string email, string direccion)
+        public void ActualizarPersonaNatural(int idCliente, string dni, int genero, string nombre, string apellido, string telefono, string email, string direccion, string passwordPlana)
         {
+            string passwordHash = null;
+
+            // Si ingresó una contraseña nueva, la encripta. Si la dejó vacía, se manda null.
+            if (!string.IsNullOrEmpty(passwordPlana))
+            {
+                var passwordHasher = new PasswordHasher<object>();
+                passwordHash = passwordHasher.HashPassword(null, passwordPlana);
+            }
+
             using (var conexion = new SqlConnection(_cadenaConexion))
             {
                 using (var cmd = new SqlCommand("sp_ActualizarPersonaNatural", conexion))
@@ -124,6 +155,7 @@ namespace CalzadosMorales.Web.Repositorio
                     cmd.Parameters.AddWithValue("@telefono", telefono);
                     cmd.Parameters.AddWithValue("@email", email);
                     cmd.Parameters.AddWithValue("@direccion", direccion);
+                    cmd.Parameters.AddWithValue("@password", (object)passwordHash ?? DBNull.Value);
 
                     conexion.Open();
                     cmd.ExecuteNonQuery();
@@ -220,8 +252,16 @@ namespace CalzadosMorales.Web.Repositorio
             return lista;
         }
 
-        public void RegistrarPersonaJuridica(string ruc, string razonSocial, string repreLegal, string telefono, string email, string direccion)
+        public void RegistrarPersonaJuridica(string ruc, string razonSocial, string repreLegal, string telefono, string email, string direccion, string passwordPlana)
         {
+            string passwordHash = null;
+
+            if (!string.IsNullOrEmpty(passwordPlana))
+            {
+                var passwordHasher = new PasswordHasher<object>();
+                passwordHash = passwordHasher.HashPassword(null, passwordPlana);
+            }
+
             using (var conexion = new SqlConnection(_cadenaConexion))
             {
                 using (var cmd = new SqlCommand("sp_RegistrarPersonaJuridica", conexion))
@@ -233,6 +273,7 @@ namespace CalzadosMorales.Web.Repositorio
                     cmd.Parameters.AddWithValue("@telefono", telefono);
                     cmd.Parameters.AddWithValue("@email", email);
                     cmd.Parameters.AddWithValue("@direccion", direccion);
+                    cmd.Parameters.AddWithValue("@password", (object)passwordHash ?? DBNull.Value);
 
                     conexion.Open();
                     cmd.ExecuteNonQuery();
@@ -240,8 +281,16 @@ namespace CalzadosMorales.Web.Repositorio
             }
         }
 
-        public void ActualizarPersonaJuridica(int idCliente, string ruc, string razonSocial, string repreLegal, string telefono, string email, string direccion)
+        public void ActualizarPersonaJuridica(int idCliente, string ruc, string razonSocial, string repreLegal, string telefono, string email, string direccion, string passwordPlana)
         {
+            string passwordHash = null;
+
+            if (!string.IsNullOrEmpty(passwordPlana))
+            {
+                var passwordHasher = new PasswordHasher<object>();
+                passwordHash = passwordHasher.HashPassword(null, passwordPlana);
+            }
+
             using (var conexion = new SqlConnection(_cadenaConexion))
             {
                 using (var cmd = new SqlCommand("sp_ActualizarPersonaJuridica", conexion))
@@ -254,6 +303,7 @@ namespace CalzadosMorales.Web.Repositorio
                     cmd.Parameters.AddWithValue("@telefono", telefono);
                     cmd.Parameters.AddWithValue("@email", email);
                     cmd.Parameters.AddWithValue("@direccion", direccion);
+                    cmd.Parameters.AddWithValue("@password", (object)passwordHash ?? DBNull.Value);
 
                     conexion.Open();
                     cmd.ExecuteNonQuery();
@@ -275,6 +325,40 @@ namespace CalzadosMorales.Web.Repositorio
                     cmd.ExecuteNonQuery();
                 }
             }
+        }
+
+        // ==========================================
+        // LOGIN Y AUTENTICACIÓN
+        // ==========================================
+
+        public Cliente LoginCliente(string email)
+        {
+            Cliente cliente = null;
+            using (var conexion = new SqlConnection(_cadenaConexion))
+            {
+                using (var cmd = new SqlCommand("sp_LoginCliente", conexion))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@email", email);
+                    conexion.Open();
+                    using (var dr = cmd.ExecuteReader())
+                    {
+                        if (dr.Read())
+                        {
+                            cliente = new Cliente
+                            {
+                                IdCliente = Convert.ToInt32(dr["id_cliente"]),
+                                Email = dr["email"].ToString(),
+                                Direccion = dr["direccion"].ToString(),
+                                Telefono = dr["telefono"].ToString(),
+                                Password = dr["password"] != DBNull.Value ? dr["password"].ToString() : null,
+                                Estado = Convert.ToBoolean(dr["estado"]) // <--- ¡AQUÍ ESTABA EL DETALLE!
+                            };
+                        }
+                    }
+                }
+            }
+            return cliente;
         }
     }
 }

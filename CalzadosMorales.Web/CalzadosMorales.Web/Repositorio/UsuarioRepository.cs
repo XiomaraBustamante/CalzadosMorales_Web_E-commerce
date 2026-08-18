@@ -186,7 +186,7 @@ namespace CalzadosMorales.Web.Repositorio
                         cmd.CommandType = CommandType.StoredProcedure;
                         cmd.Parameters.AddWithValue("@nombre", nombre);
                         cmd.Parameters.AddWithValue("@usuario", usuario);
-                        cmd.Parameters.AddWithValue("@clave", clave);
+                        cmd.Parameters.AddWithValue("@clave", clave); // <-- Asegurar que esté presente
                         cmd.Parameters.AddWithValue("@id_rol", idRol);
 
                         conexion.Open();
@@ -206,7 +206,7 @@ namespace CalzadosMorales.Web.Repositorio
         }
 
         // 6. ACTUALIZAR
-        public void ActualizarUsuario(int idUsuario, string nombre, string usuario, int idRol)
+        public void ActualizarUsuario(int idUsuario, string nombre, string usuario, string clave, int idRol) // <-- Agregar parámetro clave
         {
             try
             {
@@ -218,6 +218,7 @@ namespace CalzadosMorales.Web.Repositorio
                         cmd.Parameters.AddWithValue("@id_usuario", idUsuario);
                         cmd.Parameters.AddWithValue("@nombre", nombre);
                         cmd.Parameters.AddWithValue("@usuario", usuario);
+                        cmd.Parameters.AddWithValue("@clave", string.IsNullOrEmpty(clave) ? (object)DBNull.Value : clave); // <-- Enviar DBNull si viene vacía
                         cmd.Parameters.AddWithValue("@id_rol", idRol);
 
                         conexion.Open();

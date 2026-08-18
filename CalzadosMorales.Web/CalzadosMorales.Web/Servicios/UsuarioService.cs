@@ -1,5 +1,7 @@
 ﻿using CalzadosMorales.Web.Models;
 using CalzadosMorales.Web.Repositorio;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace CalzadosMorales.Web.Servicios
 {
@@ -12,6 +14,19 @@ namespace CalzadosMorales.Web.Servicios
             _usuarioRepository = usuarioRepository;
         }
 
+        // Método auxiliar para encriptar la contraseña con SHA256
+        private string EncriptarClave(string texto)
+        {
+            if (string.IsNullOrEmpty(texto)) return string.Empty;
+
+            using (var sha256 = SHA256.Create())
+            {
+                var bytes = Encoding.UTF8.GetBytes(texto);
+                var hashBytes = sha256.ComputeHash(bytes);
+                return string.Concat(hashBytes.Select(b => b.ToString("x2")));
+            }
+        }
+
         public Usuario ValidarUsuario(string usuario, string clave)
         {
             try
@@ -21,7 +36,11 @@ namespace CalzadosMorales.Web.Servicios
                     throw new Exception("El usuario y la contraseña son obligatorios para iniciar sesión.");
                 }
 
-                return _usuarioRepository.ValidarUsuario(usuario.Trim(), clave);
+                // Al validar el login, también debemos encriptar la contraseña ingresada 
+                // para que coincida con la que está guardada en la base de datos de forma segura.
+                string claveEncriptada = EncriptarClave(clave.Trim());
+
+                return _usuarioRepository.ValidarUsuario(usuario.Trim(), claveEncriptada);
             }
             catch (Exception ex)
             {
@@ -92,7 +111,10 @@ namespace CalzadosMorales.Web.Servicios
                 if (idRol <= 0)
                     throw new Exception("Debe seleccionar un rol válido para el usuario.");
 
-                _usuarioRepository.RegistrarUsuario(nombre.Trim(), usuario.Trim(), clave, idRol);
+                // Encriptamos la clave antes de enviarla al repositorio
+                string claveEncriptada = EncriptarClave(clave.Trim());
+
+                _usuarioRepository.RegistrarUsuario(nombre.Trim(), usuario.Trim(), claveEncriptada, idRol);
             }
             catch (Exception ex)
             {
@@ -100,7 +122,8 @@ namespace CalzadosMorales.Web.Servicios
             }
         }
 
-        public void ActualizarUsuario(int idUsuario, string nombre, string usuario, int idRol)
+        // Se agregó el parámetro 'string clave' para permitir actualizarla de forma opcional
+        public void ActualizarUsuario(int idUsuario, string nombre, string usuario, string clave, int idRol)
         {
             try
             {
@@ -116,7 +139,11 @@ namespace CalzadosMorales.Web.Servicios
                 if (idRol <= 0)
                     throw new Exception("Debe seleccionar un rol válido.");
 
-                _usuarioRepository.ActualizarUsuario(idUsuario, nombre.Trim(), usuario.Trim(), idRol);
+                // Si la clave viene vacía/nula, mandamos cadena vacía para que el repositorio maneje el DBNull y conserve la anterior.
+                // Si escribieron una nueva, la encriptamos.
+                string claveEncriptada = string.IsNullOrWhiteSpace(clave) ? string.Empty : EncriptarClave(clave.Trim());
+
+                _usuarioRepository.ActualizarUsuario(idUsuario, nombre.Trim(), usuario.Trim(), claveEncriptada, idRol);
             }
             catch (Exception ex)
             {

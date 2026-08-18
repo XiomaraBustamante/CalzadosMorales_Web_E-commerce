@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace CalzadosMorales.Web.Controllers
 {
-    [Authorize]
+    [Authorize(AuthenticationSchemes = "AdminCookie")]
     public class ProductoController : Controller
     {
         private readonly ProductoService _productoService;

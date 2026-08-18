@@ -39,8 +39,9 @@ namespace CalzadosMorales.Web.Controllers
                     new Claim(ClaimTypes.Role, user.Rol.Nombre)
                 };
 
-                var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-                await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(claimsIdentity));
+                // --- CAMBIO AQUÍ: Usamos "AdminCookie" en lugar del esquema por defecto ---
+                var claimsIdentity = new ClaimsIdentity(claims, "AdminCookie");
+                await HttpContext.SignInAsync("AdminCookie", new ClaimsPrincipal(claimsIdentity));
 
                 // Redirige según el rol que venga de tu base de datos
                 if (user.Rol.Nombre == "Administrador")
@@ -58,10 +59,11 @@ namespace CalzadosMorales.Web.Controllers
             return View();
         }
 
-        // Cierra la sesión del usuario
+        // Cierra la sesión del administrador
         public async Task<IActionResult> Logout()
         {
-            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            // --- CAMBIO AQUÍ: Cerramos específicamente la cookie del admin ---
+            await HttpContext.SignOutAsync("AdminCookie");
             return RedirectToAction("Login", "Acceso");
         }
     }

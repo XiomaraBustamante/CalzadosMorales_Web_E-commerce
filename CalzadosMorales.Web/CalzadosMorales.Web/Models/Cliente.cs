@@ -22,6 +22,12 @@ namespace CalzadosMorales.Web.Models
         [StringLength(50)]
         public string Email { get; set; }
 
+      
+        [Column("password")]
+        [StringLength(255)]
+        public string? Password { get; set; }
+        // ---------------------------
+
         [Column("fecha_registro", TypeName = "date")]
         public DateTime FechaRegistro { get; set; } = DateTime.Now;
 

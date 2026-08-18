@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace CalzadosMorales.Web.Controllers
 {
-    [Authorize]
+    [Authorize(AuthenticationSchemes = "AdminCookie")]
     public class ReporteController : Controller
     {
         private readonly ReporteService _reporteService;

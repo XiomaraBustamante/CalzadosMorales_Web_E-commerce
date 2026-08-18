@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace CalzadosMorales.Web.Controllers
 {
-    [Authorize]
+    [Authorize(AuthenticationSchemes = "AdminCookie")]
     public class UsuarioController : Controller
     {
         private readonly UsuarioService _usuarioService;
@@ -72,8 +72,13 @@ namespace CalzadosMorales.Web.Controllers
         [HttpPost]
         public IActionResult Actualizar(Usuario usuario)
         {
-            // Omitir siempre la validación de clave al actualizar (ya que no se modifica en este form)
-            ModelState.Remove("Clave");
+            // CORRECCIÓN 1: Como la clave ahora es opcional al actualizar, 
+            // ya no la removemos obligatoriamente del ModelState si el usuario decidió escribir una nueva en el formulario.
+            // Solo la removemos si viene nula o vacía para que no exija validación de [Required].
+            if (string.IsNullOrWhiteSpace(usuario.Clave))
+            {
+                ModelState.Remove("Clave");
+            }
 
             if (usuario.IdUsuario <= 0)
             {
@@ -92,7 +97,10 @@ namespace CalzadosMorales.Web.Controllers
 
             try
             {
-                _usuarioService.ActualizarUsuario(usuario.IdUsuario, usuario.Nombre, usuario.UserLogin, usuario.IdRol);
+                // CORRECCIÓN 2: Pasamos `usuario.Clave` para que el servicio reciba la contraseña (si escribió una nueva) 
+                // o viaje vacía (para que el sistema conserve la anterior).
+                _usuarioService.ActualizarUsuario(usuario.IdUsuario, usuario.Nombre, usuario.UserLogin, usuario.Clave, usuario.IdRol);
+
                 return Json(new { success = true, message = "¡Usuario actualizado correctamente!" });
             }
             catch (System.Exception ex)

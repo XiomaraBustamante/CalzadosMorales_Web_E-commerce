@@ -2,7 +2,6 @@
     var controladorActual = ViewContext.RouteData.Values["controller"]?.ToString();
     var accionActual = ViewContext.RouteData.Values["action"]?.ToString();
 }
-
 <nav class="sidebar sidebar-offcanvas" id="sidebar">
     <ul class="nav">
 
@@ -15,8 +14,10 @@
                 </div>
 
                 <div class="nav-profile-text d-flex flex-column ms-3">
-                    <span class="font-weight-bold mb-1">Nombre Usuario</span>
-                    <span class="text-secondary text-small">Rol</span>
+                    <!-- Muestra el Nombre del usuario logueado -->
+                    <span class="font-weight-bold mb-1">@User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value</span>
+                    <!-- Muestra el Rol del usuario (ej. Administrador) -->
+                    <span class="text-secondary text-small">@User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value</span>
                 </div>
 
                 <i class="mdi mdi-bookmark-check text-success nav-profile-badge"></i>

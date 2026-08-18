@@ -1,80 +1,92 @@
-﻿<!DOCTYPE html>
-<html lang="es">
-<head>
+﻿<!DOCTYPE html><html lang="es"><head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - Calzados Morales</title>
 
-    <!-- ESTILOS DE LA PLANTILLA HEXASHOP (Rutas exactas según tu Explorador de Soluciones) -->
+    <!-- ESTILOS DE LA PLANTILLA HEXASHOP -->
     <link rel="stylesheet" href="~/Tienda/assets/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/Tienda/assets/css/font-awesome.css" />
     <link rel="stylesheet" href="~/Tienda/assets/css/owl-carousel.css" />
     <link rel="stylesheet" href="~/Tienda/assets/css/templatemo-hexashop.css" />
 
     <!-- TUS ESTILOS PERSONALIZADOS -->
-    <link rel="stylesheet" href="~/Tienda/assets/css/estios-tienda.css" />
-</head>
-<body>
+    <link rel="stylesheet" href="~/Tienda/assets/css/estios-tienda.css" /></head><body>
 
     <!-- Tu Navbar reutilizable -->
     @await Html.PartialAsync("_TiendaNavbar")
 
-    <main role="main">
+    <main role="main" style="min-height: 70vh;">
         @RenderBody()
     </main>
 
-    <!-- ***** Footer Start ***** -->
-    <footer>
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-3">
+    <!-- ***** Footer Start (Centrado y ordenado profesionalmente) ***** -->
+    <footer style="background: #0f172a; color: #cbd5e1; position: relative; width: 100%; border-top: 4px solid; border-image: linear-gradient(90deg, #3b82f6 0%, #10b981 50%, #f59e0b 100%) 1;">
+        <div class="container" style="padding-top: 55px; padding-bottom: 25px; max-width: 1250px;">
+            <div class="row" style="display: flex; flex-wrap: wrap; justify-content: center; row-gap: 35px;">
+                
+                <!-- Columna 1: Logo e Información de Contacto -->
+                <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12" style="padding-left: 15px; padding-right: 15px;">
                     <div class="first-item">
-                        <div class="logo">
-                            <img src="~/Tienda/assets/images/white-logo.png" alt="Calzados Morales">
+                        <div class="logo" style="margin-bottom: 20px; background: #ffffff; padding: 8px 14px; border-radius: 8px; display: inline-block; box-shadow: 0 3px 10px rgba(0,0,0,0.2);">
+                            <img src="~/Tienda/assets/images/LogoTienda.png" alt="Calzados Morales" style="width: 145px; height: auto; display: block;">
                         </div>
-                        <ul>
-                            <li><a href="#">Jr. Los Proceres, Lima, Perú</a></li>
-                            <li><a href="#">contacto@calzadosmorales.com</a></li>
-                            <li><a href="#">010-020-0340</a></li>
+                        <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px;">
+                            <li><a href="#" style="color: #94a3b8; text-decoration: none; font-size: 14px; transition: color 0.2s;" onmouseover="this.style.color='#60a5fa'" onmouseout="this.style.color='#94a3b8'"><i class="fa fa-map-marker" style="color: #3b82f6; margin-right: 8px;"></i> Jr. Los Próceres, Lima, Perú</a></li>
+                            <li><a href="mailto:contacto@calzadosmorales.com" style="color: #94a3b8; text-decoration: none; font-size: 14px; transition: color 0.2s;" onmouseover="this.style.color='#60a5fa'" onmouseout="this.style.color='#94a3b8'"><i class="fa fa-envelope" style="color: #10b981; margin-right: 8px;"></i> contacto@calzadosmorales.com</a></li>
+                            <li><a href="tel:0100200340" style="color: #94a3b8; text-decoration: none; font-size: 14px; transition: color 0.2s;" onmouseover="this.style.color='#60a5fa'" onmouseout="this.style.color='#94a3b8'"><i class="fa fa-phone" style="color: #f59e0b; margin-right: 8px;"></i> 010-020-0340</a></li>
                         </ul>
                     </div>
                 </div>
-                <div class="col-lg-3">
-                    <h4>Shopping &amp; Categories</h4>
-                    <ul>
-                        <li><a asp-controller="Tienda" asp-action="Zapatillas">Zapatillas</a></li>
-                        <li><a asp-controller="Tienda" asp-action="Sandalias">Sandalias</a></li>
-                        <li><a asp-controller="Tienda" asp-action="Zapatos">Zapatos</a></li>
+
+                <!-- Columna 2: Categorías principales -->
+                <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12" style="padding-left: 15px; padding-right: 15px;">
+                    <h4 style="color: #ffffff; font-size: 16px; font-weight: 600; margin-bottom: 20px; border-bottom: 2px solid #334155; padding-bottom: 8px; display: inline-block;">Categorías</h4>
+                    <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px;">
+                        <li><a href="@Url.Action("Catalogo", "Tienda", new { categoria = "Hombre" })" style="color: #94a3b8; text-decoration: none; font-size: 14px; transition: color 0.2s;" onmouseover="this.style.color='#60a5fa'" onmouseout="this.style.color='#94a3b8'">Hombres</a></li>
+                        <li><a href="@Url.Action("Catalogo", "Tienda", new { categoria = "Mujer" })" style="color: #94a3b8; text-decoration: none; font-size: 14px; transition: color 0.2s;" onmouseover="this.style.color='#f43f5e'" onmouseout="this.style.color='#94a3b8'">Mujeres</a></li>
+                        <li><a href="@Url.Action("Catalogo", "Tienda", new { categoria = "Niño" })" style="color: #94a3b8; text-decoration: none; font-size: 14px; transition: color 0.2s;" onmouseover="this.style.color='#fbbf24'" onmouseout="this.style.color='#94a3b8'">Niños</a></li>
+                        <li><a href="@Url.Action("CatalogoAvanzado", "Tienda")" style="color: #94a3b8; text-decoration: none; font-size: 14px; transition: color 0.2s;" onmouseover="this.style.color='#34d399'" onmouseout="this.style.color='#94a3b8'">Ver Todos los Productos</a></li>
                     </ul>
                 </div>
-                <div class="col-lg-3">
-                    <h4>Useful Links</h4>
-                    <ul>
-                        <li><a asp-controller="Tienda" asp-action="Index">Homepage</a></li>
-                        <li><a href="#">About Us</a></li>
-                        <li><a href="#">Help</a></li>
+
+                <!-- Columna 3: Enlaces del menú superior -->
+                <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12" style="padding-left: 15px; padding-right: 15px;">
+                    <h4 style="color: #ffffff; font-size: 16px; font-weight: 600; margin-bottom: 20px; border-bottom: 2px solid #334155; padding-bottom: 8px; display: inline-block;">Enlaces Útiles</h4>
+                    <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px;">
+                        <li><a href="@Url.Action("Index", "Tienda")" style="color: #94a3b8; text-decoration: none; font-size: 14px; transition: color 0.2s;" onmouseover="this.style.color='#60a5fa'" onmouseout="this.style.color='#94a3b8'">Inicio</a></li>
+                        <li><a href="#" style="color: #94a3b8; text-decoration: none; font-size: 14px; transition: color 0.2s;" onmouseover="this.style.color='#60a5fa'" onmouseout="this.style.color='#94a3b8'">Acerca de nosotros</a></li>
+                        <li><a href="#" style="color: #94a3b8; text-decoration: none; font-size: 14px; transition: color 0.2s;" onmouseover="this.style.color='#60a5fa'" onmouseout="this.style.color='#94a3b8'">Contáctanos</a></li>
                     </ul>
                 </div>
-                <div class="col-lg-3">
-                    <h4>Help &amp; Information</h4>
-                    <ul>
-                        <li><a href="#">FAQ's</a></li>
-                        <li><a href="#">Shipping</a></li>
-                        <li><a href="#">Tracking ID</a></li>
+
+                <!-- Columna 4: Tipos de Calzado -->
+                <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12" style="padding-left: 15px; padding-right: 15px;">
+                    <h4 style="color: #ffffff; font-size: 16px; font-weight: 600; margin-bottom: 20px; border-bottom: 2px solid #334155; padding-bottom: 8px; display: inline-block;">Tipos de Calzado</h4>
+                    <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px;">
+                        <li><a href="@Url.Action("Catalogo", "Tienda", new { categoria = "Zapatillas" })" style="color: #94a3b8; text-decoration: none; font-size: 14px; transition: color 0.2s;" onmouseover="this.style.color='#60a5fa'" onmouseout="this.style.color='#94a3b8'">Zapatillas</a></li>
+                        <li><a href="@Url.Action("Catalogo", "Tienda", new { categoria = "Sandalias" })" style="color: #94a3b8; text-decoration: none; font-size: 14px; transition: color 0.2s;" onmouseover="this.style.color='#60a5fa'" onmouseout="this.style.color='#94a3b8'">Sandalias</a></li>
+                        <li><a href="@Url.Action("Catalogo", "Tienda", new { categoria = "Zapatos" })" style="color: #94a3b8; text-decoration: none; font-size: 14px; transition: color 0.2s;" onmouseover="this.style.color='#60a5fa'" onmouseout="this.style.color='#94a3b8'">Zapatos</a></li>
+                        <li><a href="@Url.Action("Catalogo", "Tienda", new { categoria = "Botines" })" style="color: #94a3b8; text-decoration: none; font-size: 14px; transition: color 0.2s;" onmouseover="this.style.color='#60a5fa'" onmouseout="this.style.color='#94a3b8'">Botines</a></li>
+                        <li><a href="@Url.Action("Catalogo", "Tienda", new { categoria = "Mocasines" })" style="color: #94a3b8; text-decoration: none; font-size: 14px; transition: color 0.2s;" onmouseover="this.style.color='#60a5fa'" onmouseout="this.style.color='#94a3b8'">Mocasines</a></li>
                     </ul>
                 </div>
-                <div class="col-lg-12">
-                    <div class="under-footer">
-                        <p>Copyright © 2026 Calzados Morales Co., Ltd. All Rights Reserved. 
-                        <br>Design: <a href="https://templatemo.com" target="_parent">TemplateMo</a></p>
-                        <ul>
-                            <li><a href="#"><i class="fa fa-facebook"></i></a></li>
-                            <li><a href="#"><i class="fa fa-twitter"></i></a></li>
-                            <li><a href="#"><i class="fa fa-linkedin"></i></a></li>
-                            <li><a href="#"><i class="fa fa-behance"></i></a></li>
+
+                <!-- Sub-footer / Derechos Reservados y Redes Sociales -->
+                <div class="col-lg-12" style="margin-top: 30px; border-top: 1px solid #1e293b; padding-top: 20px;">
+                    <div class="under-footer" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+                        <p style="margin: 0; color: #94a3b8; font-size: 13px;">
+                            Copyright © 2026 Calzados Morales Co., Ltd. Todos los derechos reservados. 
+                            <span style="margin-left: 10px;">Diseño: <a href="https://templatemo.com" target="_parent" style="color: #3b82f6; text-decoration: none;">TemplateMo</a></span>
+                        </p>
+                        <ul style="list-style: none; padding: 0; margin: 0; display: flex; gap: 12px;">
+                            <li><a href="#" style="width: 36px; height: 36px; background: #1e293b; display: flex; align-items: center; justify-content: center; border-radius: 50%; color: #ffffff; text-decoration: none; transition: all 0.2s;" onmouseover="this.style.background='#3b82f6'" onmouseout="this.style.background='#1e293b'"><i class="fa fa-facebook"></i></a></li>
+                            <li><a href="#" style="width: 36px; height: 36px; background: #1e293b; display: flex; align-items: center; justify-content: center; border-radius: 50%; color: #ffffff; text-decoration: none; transition: all 0.2s;" onmouseover="this.style.background='#3b82f6'" onmouseout="this.style.background='#1e293b'"><i class="fa fa-twitter"></i></a></li>
+                            <li><a href="#" style="width: 36px; height: 36px; background: #1e293b; display: flex; align-items: center; justify-content: center; border-radius: 50%; color: #ffffff; text-decoration: none; transition: all 0.2s;" onmouseover="this.style.background='#3b82f6'" onmouseout="this.style.background='#1e293b'"><i class="fa fa-linkedin"></i></a></li>
+                            <li><a href="#" style="width: 36px; height: 36px; background: #1e293b; display: flex; align-items: center; justify-content: center; border-radius: 50%; color: #ffffff; text-decoration: none; transition: all 0.2s;" onmouseover="this.style.background='#3b82f6'" onmouseout="this.style.background='#1e293b'"><i class="fa fa-behance"></i></a></li>
                         </ul>
                     </div>
                 </div>
+
             </div>
         </div>
     </footer>
@@ -99,7 +111,15 @@
     <!-- Script principal de la plantilla -->
     <script src="~/Tienda/assets/js/custom.js"></script>
 
-    @await RenderSectionAsync("Scripts", required: false)
+    <!-- Atajo secreto para ir al panel de administración -->
+    <script>
+        document.addEventListener('keydown', function(event) {
+            // Presiona Ctrl + Shift + A (o Command + Shift + A en Mac)
+            if ((event.ctrlKey || event.metaKey) && event.shiftKey && (event.key === 'A' || event.key === 'a')) {
+                event.preventDefault(); // Evita comportamientos por defecto del navegador
+                window.location.href = '@Url.Action("Login", "Acceso")';
+            }
+        });
+    </script>
 
-</body>
-</html>
+    @await RenderSectionAsync("Scripts", required: false)</body></html>

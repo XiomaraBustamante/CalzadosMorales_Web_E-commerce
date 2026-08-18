@@ -175,6 +175,7 @@
                     <div class="form-group mb-3" id="grupoClave">
                         <label class="form-label fw-bold text-dark">Contraseña</label>
                         <input type="password" class="form-control" id="clave" name="Clave" required placeholder="••••••••">
+                        <small id="ayudaClave" class="text-muted" style="display: none;">Deje en blanco para mantener la actual.</small>
                         <div class="invalid-feedback">
                             Por favor ingrese una contraseña.
                         </div>
@@ -239,9 +240,12 @@
             var form = document.getElementById('formUsuario');
             form.action = '/Usuario/Actualizar';
 
-            document.getElementById('grupoClave').style.display = 'none';
+            // Configurar clave como opcional en edición
+            document.getElementById('grupoClave').style.display = 'block';
             document.getElementById('clave').removeAttribute('required');
+            document.getElementById('clave').placeholder = "Nueva contraseña (opcional)";
             document.getElementById('clave').value = '';
+            document.getElementById('ayudaClave').style.display = 'block';
 
             form.classList.remove('was-validated');
         }
@@ -258,8 +262,11 @@
             var form = document.getElementById('formUsuario');
             form.action = '/Usuario/Registrar';
 
+            // Configurar clave como obligatoria en registro
             document.getElementById('grupoClave').style.display = 'block';
             document.getElementById('clave').setAttribute('required', 'required');
+            document.getElementById('clave').placeholder = "••••••••";
+            document.getElementById('ayudaClave').style.display = 'none';
 
             form.classList.remove('was-validated');
         }

@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace CalzadosMorales.Web.Controllers
 {
-    [Authorize]
+    [Authorize(AuthenticationSchemes = "AdminCookie")]
     public class ClienteController : Controller
     {
         private readonly ClienteService _clienteService;
@@ -42,11 +42,11 @@ namespace CalzadosMorales.Web.Controllers
         }
 
         [HttpPost]
-        public IActionResult RegistrarNatural(string dni, int genero, string nombre, string apellido, string telefono, string email, string direccion)
+        public IActionResult RegistrarNatural(string dni, int genero, string nombre, string apellido, string telefono, string email, string direccion, string password)
         {
             try
             {
-                _clienteService.RegistrarPersonaNatural(dni, genero, nombre, apellido, telefono, email, direccion);
+                _clienteService.RegistrarPersonaNatural(dni, genero, nombre, apellido, telefono, email, direccion, password);
                 return Json(new { success = true, message = "Persona natural registrada exitosamente." });
             }
             catch (Exception ex)
@@ -56,11 +56,12 @@ namespace CalzadosMorales.Web.Controllers
         }
 
         [HttpPost]
-        public IActionResult ActualizarNatural(int idCliente, string dni, int genero, string nombre, string apellido, string telefono, string email, string direccion)
+        public IActionResult ActualizarNatural(int idCliente, string dni, int genero, string nombre, string apellido, string telefono, string email, string direccion, string? password)
         {
             try
             {
-                _clienteService.ActualizarPersonaNatural(idCliente, dni, genero, nombre, apellido, telefono, email, direccion);
+                // Ahora le pasamos la contraseña opcional al servicio
+                _clienteService.ActualizarPersonaNatural(idCliente, dni, genero, nombre, apellido, telefono, email, direccion, password);
                 return Json(new { success = true, message = "Persona natural actualizada exitosamente." });
             }
             catch (Exception ex)
@@ -103,11 +104,11 @@ namespace CalzadosMorales.Web.Controllers
         }
 
         [HttpPost]
-        public IActionResult RegistrarJuridica(string ruc, string razonSocial, string repreLegal, string telefono, string email, string direccion)
+        public IActionResult RegistrarJuridica(string ruc, string razonSocial, string repreLegal, string telefono, string email, string direccion, string password)
         {
             try
             {
-                _clienteService.RegistrarPersonaJuridica(ruc, razonSocial, repreLegal, telefono, email, direccion);
+                _clienteService.RegistrarPersonaJuridica(ruc, razonSocial, repreLegal, telefono, email, direccion, password);
                 return Json(new { success = true, message = "Persona jurídica registrada exitosamente." });
             }
             catch (Exception ex)
@@ -117,11 +118,12 @@ namespace CalzadosMorales.Web.Controllers
         }
 
         [HttpPost]
-        public IActionResult ActualizarJuridica(int idCliente, string ruc, string razonSocial, string repreLegal, string telefono, string email, string direccion)
+        public IActionResult ActualizarJuridica(int idCliente, string ruc, string razonSocial, string repreLegal, string telefono, string email, string direccion, string? password)
         {
             try
             {
-                _clienteService.ActualizarPersonaJuridica(idCliente, ruc, razonSocial, repreLegal, telefono, email, direccion);
+                // Ahora le pasamos la contraseña opcional al servicio
+                _clienteService.ActualizarPersonaJuridica(idCliente, ruc, razonSocial, repreLegal, telefono, email, direccion, password);
                 return Json(new { success = true, message = "Persona jurídica actualizada exitosamente." });
             }
             catch (Exception ex)

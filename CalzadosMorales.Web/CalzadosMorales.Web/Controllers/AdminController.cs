@@ -4,10 +4,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CalzadosMorales.Web.Controllers 
-{ 
+{
 
-    [Authorize]
-public class AdminController : Controller
+    [Authorize(AuthenticationSchemes = "AdminCookie")]
+    public class AdminController : Controller
     {
         private readonly AdminService _adminService;
 

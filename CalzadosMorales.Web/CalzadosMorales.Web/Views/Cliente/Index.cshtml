@@ -206,9 +206,16 @@
                             <input type="email" class="form-control" id="natEmail" name="email" required>
                         </div>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label fw-bold small">Dirección</label>
-                        <input type="text" class="form-control" id="natDireccion" name="direccion" required>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold small">Contraseña</label>
+                            <input type="password" class="form-control" id="natPassword" name="password" placeholder="••••••••" required>
+                            <small class="text-muted" id="natPasswordHelp">Obligatorio al registrar.</small>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold small">Dirección</label>
+                            <input type="text" class="form-control" id="natDireccion" name="direccion" required>
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer bg-light">
@@ -258,9 +265,16 @@
                             <input type="email" class="form-control" id="jurEmail" name="email" required>
                         </div>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label fw-bold small">Dirección</label>
-                        <input type="text" class="form-control" id="jurDireccion" name="direccion" required>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold small">Contraseña</label>
+                            <input type="password" class="form-control" id="jurPassword" name="password" placeholder="••••••••" required>
+                            <small class="text-muted" id="jurPasswordHelp">Obligatorio al registrar.</small>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold small">Dirección</label>
+                            <input type="text" class="form-control" id="jurDireccion" name="direccion" required>
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer bg-light">
@@ -379,6 +393,11 @@
             document.getElementById("tituloModalNatural").innerText = "Registrar Persona Natural";
             document.getElementById("natIdCliente").value = "0";
             document.getElementById("formNatural").reset();
+
+            // Asegurar que la contraseña sea obligatoria en nuevo registro
+            const passInput = document.getElementById("natPassword");
+            passInput.setAttribute("required", "required");
+            document.getElementById("natPasswordHelp").innerText = "Obligatorio al registrar.";
         }
 
         function abrirEditarNatural(id) {
@@ -402,6 +421,12 @@
                     document.getElementById("natTelefono").value = data.cliente.telefono;
                     document.getElementById("natEmail").value = data.cliente.email;
                     document.getElementById("natDireccion").value = data.cliente.direccion;
+
+                    // Al editar, la contraseña puede ser opcional (dejar en blanco para no cambiar)
+                    const passInput = document.getElementById("natPassword");
+                    passInput.value = "";
+                    passInput.removeAttribute("required");
+                    document.getElementById("natPasswordHelp").innerText = "Dejar en blanco para mantener la actual.";
 
                     var myModal = new bootstrap.Modal(document.getElementById('modalNatural'));
                     myModal.show();
@@ -447,6 +472,11 @@
             document.getElementById("tituloModalJuridica").innerText = "Registrar Persona Jurídica";
             document.getElementById("jurIdCliente").value = "0";
             document.getElementById("formJuridica").reset();
+
+            // Asegurar que la contraseña sea obligatoria en nuevo registro
+            const passInput = document.getElementById("jurPassword");
+            passInput.setAttribute("required", "required");
+            document.getElementById("jurPasswordHelp").innerText = "Obligatorio al registrar.";
         }
 
         function abrirEditarJuridica(id) {
@@ -469,6 +499,12 @@
                     document.getElementById("jurTelefono").value = data.cliente.telefono;
                     document.getElementById("jurEmail").value = data.cliente.email;
                     document.getElementById("jurDireccion").value = data.cliente.direccion;
+
+                    // Al editar, la contraseña puede ser opcional (dejar en blanco para no cambiar)
+                    const passInput = document.getElementById("jurPassword");
+                    passInput.value = "";
+                    passInput.removeAttribute("required");
+                    document.getElementById("jurPasswordHelp").innerText = "Dejar en blanco para mantener la actual.";
 
                     var myModal = new bootstrap.Modal(document.getElementById('modalJuridica'));
                     myModal.show();

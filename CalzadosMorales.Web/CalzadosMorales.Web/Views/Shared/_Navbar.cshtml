@@ -22,13 +22,13 @@
                     </div>
                     <div class="nav-profile-text">
                         <p class="mb-1 text-black d-flex align-items-center">
-                            <span>Usuario</span>
+                            <span>@User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value</span>
                             <i class="mdi mdi-chevron-down ms-1" style="font-size: 1.2rem;"></i>
                         </p>
                     </div>
                 </a>
                 <div class="dropdown-menu navbar-dropdown" aria-labelledby="profileDropdown">
-                    <form asp-controller="Acceso" asp-action="Salir" method="post" id="logoutForm" style="display: none;"></form>
+                    <form asp-controller="Acceso" asp-action="Logout" method="post" id="logoutForm" style="display: none;"></form>
                     <a class="dropdown-item" href="javascript:document.getElementById('logoutForm').submit();">
                         <i class="mdi mdi-logout me-2 text-primary"></i> Cerrar Sesión
                     </a>
